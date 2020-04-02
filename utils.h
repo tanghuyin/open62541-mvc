@@ -13,4 +13,8 @@ int findNodeID(UA_Server *server,
                 const UA_QualifiedName targetNameArr[],
                 UA_NodeId *result);
 
+size_t hash(const void *key);
+
+bool compare(const void *key1, const void *key2);
+
 #endif

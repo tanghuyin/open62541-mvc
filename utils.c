@@ -20,3 +20,20 @@ int findNodeID(UA_Server *server,
     
     return ret;
 }
+
+/* The keys need to be hashed with a self-supplied function. */
+size_t hash(const void *key) {
+    size_t hash = 0;
+    for (size_t i = 0; i < strlen(key); i++) {
+        hash = 31 * hash + *((char *) (key + i));
+    }
+
+    return hash;
+}
+
+/* Comparison functions must return true if the keys are equal,
+ * false otherwise.
+ */
+bool compare(const void *key1, const void *key2) {
+    return strcmp(key1, key2) == 0;
+}
