@@ -1178,6 +1178,7 @@ int main(void) {
 
         hashmap = hashmap_new(16, hash, compare); // 存储名称和nodeid对的hashmap
 
+        // 第一个机器人
         UA_NodeId RobotId;
         UA_ObjectAttributes object_attr = UA_ObjectAttributes_default;
 
@@ -1190,6 +1191,19 @@ int main(void) {
                                 UA_QUALIFIEDNAME(1, "myFirstRobot"),
                                 UA_NODEID_NUMERIC(2, 1003),
                                 object_attr, NULL, &RobotId);
+
+        // 第二个机器人
+
+        UA_NodeId Robot2Id;
+        UA_ObjectAttributes object_attr2 = UA_ObjectAttributes_default;
+        object_attr2.description = UA_LOCALIZEDTEXT("en-US", "mySecondRobot");
+        object_attr2.displayName = UA_LOCALIZEDTEXT("en-US", "Robot_2#");
+        UA_Server_addObjectNode(server, UA_NODEID_NULL,
+                                UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+                                UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                UA_QUALIFIEDNAME(1, "mySecondRobot"),
+                                UA_NODEID_NUMERIC(2, 1003),
+                                object_attr2, NULL, &Robot2Id);
 
         // TODO: 获得机器人对象的根节点以及机器人定义的模型，可以将所有节点以及其NodeId以map的方式返回
         /*
@@ -1218,246 +1232,68 @@ int main(void) {
         */
         int ret;
 
-        // 获取节点nodeid的自动生成code
-        UA_QualifiedName link1_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1")};
-        UA_NodeId link1_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link1_nameArr, &link1_id);
-        hashmap_set(hashmap, "link1_", &link1_id, NULL);
+        // Robot1 的node
+        UA_QualifiedName robot1_link1_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link1_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link1_angle_angleValue_nameArr, &robot1_link1_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link1_angle_angleValue_", &robot1_link1_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link1_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link1_angle_nameArr, &link1_angle_id);
-        hashmap_set(hashmap, "link1_angle_", &link1_angle_id, NULL);
+        UA_QualifiedName robot1_link2_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link2_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link2_angle_angleValue_nameArr, &robot1_link2_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link2_angle_angleValue_", &robot1_link2_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link1_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link1_angle_angleDownLimit_nameArr, &link1_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link1_angle_angleDownLimit_", &link1_angle_angleDownLimit_id, NULL);
+        UA_QualifiedName robot1_link3_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link3_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link3_angle_angleValue_nameArr, &robot1_link3_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link3_angle_angleValue_", &robot1_link3_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link1_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link1_angle_angleUpLimit_nameArr, &link1_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link1_angle_angleUpLimit_", &link1_angle_angleUpLimit_id, NULL);
+        UA_QualifiedName robot1_link4_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link4_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link4_angle_angleValue_nameArr, &robot1_link4_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link4_angle_angleValue_", &robot1_link4_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link1_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link1_angle_angleValue_nameArr, &link1_angle_angleValue_id);
-        hashmap_set(hashmap, "link1_angle_angleValue_", &link1_angle_angleValue_id, NULL);
+        UA_QualifiedName robot1_link5_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link5_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link5_angle_angleValue_nameArr, &robot1_link5_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link5_angle_angleValue_", &robot1_link5_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link1_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link1_x_nameArr, &link1_x_id);
-        hashmap_set(hashmap, "link1_x_", &link1_x_id, NULL);
+        UA_QualifiedName robot1_link6_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot1_link6_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot1_link6_angle_angleValue_nameArr, &robot1_link6_angle_angleValue_id);
+        hashmap_set(hashmap, "robot1_link6_angle_angleValue_", &robot1_link6_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link1_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link1_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link1_y_nameArr, &link1_y_id);
-        hashmap_set(hashmap, "link1_y_", &link1_y_id, NULL);
 
-        UA_QualifiedName link1_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link1_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link1_z_nameArr, &link1_z_id);
-        hashmap_set(hashmap, "link1_z_", &link1_z_id, NULL);
+        // Robot2 的node
+        UA_QualifiedName robot2_link1_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link1"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link1_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link1_angle_angleValue_nameArr, &robot2_link1_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link1_angle_angleValue_", &robot2_link1_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link2_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2")};
-        UA_NodeId link2_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link2_nameArr, &link2_id);
-        hashmap_set(hashmap, "link2_", &link2_id, NULL);
+        UA_QualifiedName robot2_link2_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link2_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link2_angle_angleValue_nameArr, &robot2_link2_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link2_angle_angleValue_", &robot2_link2_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link2_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link2_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link2_angle_nameArr, &link2_angle_id);
-        hashmap_set(hashmap, "link2_angle_", &link2_angle_id, NULL);
+        UA_QualifiedName robot2_link3_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link3_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link3_angle_angleValue_nameArr, &robot2_link3_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link3_angle_angleValue_", &robot2_link3_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link2_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link2_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link2_angle_angleDownLimit_nameArr, &link2_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link2_angle_angleDownLimit_", &link2_angle_angleDownLimit_id, NULL);
+        UA_QualifiedName robot2_link4_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link4_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link4_angle_angleValue_nameArr, &robot2_link4_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link4_angle_angleValue_", &robot2_link4_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link2_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link2_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link2_angle_angleUpLimit_nameArr, &link2_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link2_angle_angleUpLimit_", &link2_angle_angleUpLimit_id, NULL);
+        UA_QualifiedName robot2_link5_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link5_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link5_angle_angleValue_nameArr, &robot2_link5_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link5_angle_angleValue_", &robot2_link5_angle_angleValue_id, NULL);
 
-        UA_QualifiedName link2_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link2_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link2_angle_angleValue_nameArr, &link2_angle_angleValue_id);
-        hashmap_set(hashmap, "link2_angle_angleValue_", &link2_angle_angleValue_id, NULL);
-
-        UA_QualifiedName link2_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link2_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link2_x_nameArr, &link2_x_id);
-        hashmap_set(hashmap, "link2_x_", &link2_x_id, NULL);
-
-        UA_QualifiedName link2_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link2_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link2_y_nameArr, &link2_y_id);
-        hashmap_set(hashmap, "link2_y_", &link2_y_id, NULL);
-
-        UA_QualifiedName link2_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link2"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link2_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link2_z_nameArr, &link2_z_id);
-        hashmap_set(hashmap, "link2_z_", &link2_z_id, NULL);
-
-        UA_QualifiedName link3_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3")};
-        UA_NodeId link3_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link3_nameArr, &link3_id);
-        hashmap_set(hashmap, "link3_", &link3_id, NULL);
-
-        UA_QualifiedName link3_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link3_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link3_angle_nameArr, &link3_angle_id);
-        hashmap_set(hashmap, "link3_angle_", &link3_angle_id, NULL);
-
-        UA_QualifiedName link3_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link3_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link3_angle_angleDownLimit_nameArr, &link3_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link3_angle_angleDownLimit_", &link3_angle_angleDownLimit_id, NULL);
-
-        UA_QualifiedName link3_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link3_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link3_angle_angleUpLimit_nameArr, &link3_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link3_angle_angleUpLimit_", &link3_angle_angleUpLimit_id, NULL);
-
-        UA_QualifiedName link3_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link3_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link3_angle_angleValue_nameArr, &link3_angle_angleValue_id);
-        hashmap_set(hashmap, "link3_angle_angleValue_", &link3_angle_angleValue_id, NULL);
-
-        UA_QualifiedName link3_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link3_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link3_x_nameArr, &link3_x_id);
-        hashmap_set(hashmap, "link3_x_", &link3_x_id, NULL);
-
-        UA_QualifiedName link3_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link3_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link3_y_nameArr, &link3_y_id);
-        hashmap_set(hashmap, "link3_y_", &link3_y_id, NULL);
-
-        UA_QualifiedName link3_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link3"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link3_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link3_z_nameArr, &link3_z_id);
-        hashmap_set(hashmap, "link3_z_", &link3_z_id, NULL);
-
-        UA_QualifiedName link4_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4")};
-        UA_NodeId link4_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link4_nameArr, &link4_id);
-        hashmap_set(hashmap, "link4_", &link4_id, NULL);
-
-        UA_QualifiedName link4_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link4_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link4_angle_nameArr, &link4_angle_id);
-        hashmap_set(hashmap, "link4_angle_", &link4_angle_id, NULL);
-
-        UA_QualifiedName link4_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link4_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link4_angle_angleDownLimit_nameArr, &link4_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link4_angle_angleDownLimit_", &link4_angle_angleDownLimit_id, NULL);
-
-        UA_QualifiedName link4_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link4_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link4_angle_angleUpLimit_nameArr, &link4_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link4_angle_angleUpLimit_", &link4_angle_angleUpLimit_id, NULL);
-
-        UA_QualifiedName link4_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link4_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link4_angle_angleValue_nameArr, &link4_angle_angleValue_id);
-        hashmap_set(hashmap, "link4_angle_angleValue_", &link4_angle_angleValue_id, NULL);
-
-        UA_QualifiedName link4_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link4_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link4_x_nameArr, &link4_x_id);
-        hashmap_set(hashmap, "link4_x_", &link4_x_id, NULL);
-
-        UA_QualifiedName link4_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link4_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link4_y_nameArr, &link4_y_id);
-        hashmap_set(hashmap, "link4_y_", &link4_y_id, NULL);
-
-        UA_QualifiedName link4_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link4"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link4_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link4_z_nameArr, &link4_z_id);
-        hashmap_set(hashmap, "link4_z_", &link4_z_id, NULL);
-
-        UA_QualifiedName link5_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5")};
-        UA_NodeId link5_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link5_nameArr, &link5_id);
-        hashmap_set(hashmap, "link5_", &link5_id, NULL);
-
-        UA_QualifiedName link5_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link5_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link5_angle_nameArr, &link5_angle_id);
-        hashmap_set(hashmap, "link5_angle_", &link5_angle_id, NULL);
-
-        UA_QualifiedName link5_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link5_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link5_angle_angleDownLimit_nameArr, &link5_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link5_angle_angleDownLimit_", &link5_angle_angleDownLimit_id, NULL);
-
-        UA_QualifiedName link5_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link5_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link5_angle_angleUpLimit_nameArr, &link5_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link5_angle_angleUpLimit_", &link5_angle_angleUpLimit_id, NULL);
-
-        UA_QualifiedName link5_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link5_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link5_angle_angleValue_nameArr, &link5_angle_angleValue_id);
-        hashmap_set(hashmap, "link5_angle_angleValue_", &link5_angle_angleValue_id, NULL);
-
-        UA_QualifiedName link5_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link5_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link5_x_nameArr, &link5_x_id);
-        hashmap_set(hashmap, "link5_x_", &link5_x_id, NULL);
-
-        UA_QualifiedName link5_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link5_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link5_y_nameArr, &link5_y_id);
-        hashmap_set(hashmap, "link5_y_", &link5_y_id, NULL);
-
-        UA_QualifiedName link5_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link5"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link5_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link5_z_nameArr, &link5_z_id);
-        hashmap_set(hashmap, "link5_z_", &link5_z_id, NULL);
-
-        UA_QualifiedName link6_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6")};
-        UA_NodeId link6_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, link6_nameArr, &link6_id);
-        hashmap_set(hashmap, "link6_", &link6_id, NULL);
-
-        UA_QualifiedName link6_angle_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle")};
-        UA_NodeId link6_angle_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link6_angle_nameArr, &link6_angle_id);
-        hashmap_set(hashmap, "link6_angle_", &link6_angle_id, NULL);
-
-        UA_QualifiedName link6_angle_angleDownLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleDownLimit")};
-        UA_NodeId link6_angle_angleDownLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link6_angle_angleDownLimit_nameArr, &link6_angle_angleDownLimit_id);
-        hashmap_set(hashmap, "link6_angle_angleDownLimit_", &link6_angle_angleDownLimit_id, NULL);
-
-        UA_QualifiedName link6_angle_angleUpLimit_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleUpLimit")};
-        UA_NodeId link6_angle_angleUpLimit_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link6_angle_angleUpLimit_nameArr, &link6_angle_angleUpLimit_id);
-        hashmap_set(hashmap, "link6_angle_angleUpLimit_", &link6_angle_angleUpLimit_id, NULL);
-
-        UA_QualifiedName link6_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
-        UA_NodeId link6_angle_angleValue_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, link6_angle_angleValue_nameArr, &link6_angle_angleValue_id);
-        hashmap_set(hashmap, "link6_angle_angleValue_", &link6_angle_angleValue_id, NULL);
-
-        UA_QualifiedName link6_x_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "x")};
-        UA_NodeId link6_x_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link6_x_nameArr, &link6_x_id);
-        hashmap_set(hashmap, "link6_x_", &link6_x_id, NULL);
-
-        UA_QualifiedName link6_y_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "y")};
-        UA_NodeId link6_y_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link6_y_nameArr, &link6_y_id);
-        hashmap_set(hashmap, "link6_y_", &link6_y_id, NULL);
-
-        UA_QualifiedName link6_z_nameArr[3] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "z")};
-        UA_NodeId link6_z_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 3, link6_z_nameArr, &link6_z_id);
-        hashmap_set(hashmap, "link6_z_", &link6_z_id, NULL);
+        UA_QualifiedName robot2_link6_angle_angleValue_nameArr[4] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "link6"), UA_QUALIFIEDNAME(2, "angle"), UA_QUALIFIEDNAME(2, "angleValue")};
+        UA_NodeId robot2_link6_angle_angleValue_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 4, robot2_link6_angle_angleValue_nameArr, &robot2_link6_angle_angleValue_id);
+        hashmap_set(hashmap, "robot2_link6_angle_angleValue_", &robot2_link6_angle_angleValue_id, NULL);
 
         // 获取节点nodeid自动生成code结束
 
@@ -1471,29 +1307,25 @@ int main(void) {
         ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, Status_nameArr, &Status_id);
         hashmap_set(hashmap, "Status_", &Status_id, NULL);
         
-        UA_NodeId tmp = *(UA_NodeId *)hashmap_get(hashmap, "link1_");
-        printf("%u \n", tmp.identifier.numeric);
 
 
         // 将回调函数绑定到server
         addStatus_CallbackToRobot(server, Status_id);
-        addlink1_x_CallbackToRobot(server, link1_x_id);
-        addlink1_x_CallbackToRobot(server, link1_y_id);
-        addlink1_x_CallbackToRobot(server, link1_z_id);
-        addlink5_x_CallbackToRobot(server, link5_x_id);
-        addlink5_y_CallbackToRobot(server, link5_y_id);
-        addlink5_z_CallbackToRobot(server, link5_z_id);
+
+
+        addlink1_angle_angleValue_CallbackToRobot(server, robot1_link1_angle_angleValue_id);
+        addlink2_angle_angleValue_CallbackToRobot(server, robot1_link2_angle_angleValue_id);
+        addlink3_angle_angleValue_CallbackToRobot(server, robot1_link3_angle_angleValue_id);
+        addlink4_angle_angleValue_CallbackToRobot(server, robot1_link4_angle_angleValue_id);
+        addlink5_angle_angleValue_CallbackToRobot(server, robot1_link5_angle_angleValue_id);
+        addlink6_angle_angleValue_CallbackToRobot(server, robot1_link6_angle_angleValue_id);
         
-        addlink5_angle_angleUpLimit_CallbackToRobot(server, link5_angle_angleUpLimit_id);
-        addlink5_angle_angleDownLimit_CallbackToRobot(server, link5_angle_angleDownLimit_id);
-
-
-        addlink1_angle_angleValue_CallbackToRobot(server, link1_angle_angleValue_id);
-        addlink2_angle_angleValue_CallbackToRobot(server, link2_angle_angleValue_id);
-        addlink3_angle_angleValue_CallbackToRobot(server, link3_angle_angleValue_id);
-        addlink4_angle_angleValue_CallbackToRobot(server, link4_angle_angleValue_id);
-        addlink5_angle_angleValue_CallbackToRobot(server, link5_angle_angleValue_id);
-        addlink6_angle_angleValue_CallbackToRobot(server, link6_angle_angleValue_id);
+        addlink1_angle_angleValue_CallbackToRobot(server, robot2_link1_angle_angleValue_id);
+        addlink2_angle_angleValue_CallbackToRobot(server, robot2_link2_angle_angleValue_id);
+        addlink3_angle_angleValue_CallbackToRobot(server, robot2_link3_angle_angleValue_id);
+        addlink4_angle_angleValue_CallbackToRobot(server, robot2_link4_angle_angleValue_id);
+        addlink5_angle_angleValue_CallbackToRobot(server, robot2_link5_angle_angleValue_id);
+        addlink6_angle_angleValue_CallbackToRobot(server, robot2_link6_angle_angleValue_id);
         
 
         retval = UA_Server_run(server, &running);

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>基于Opc Ua的监控平台</title>
+    <script src="webjars/jquery/jquery.js"></script>
+    <script src="scripts/js/require.js" charset="utf-8"></script>
+    <script src="scripts/vendor/three.js/Three.js"></script>
+    <script src="scripts/vendor/three.js/Detector.js"></script>
+    <script src="scripts/vendor/three.js/Stats.js"></script>
+
+    <script src="scripts/vendor/threex/THREEx.screenshot.js"></script>
+    <script src="scripts/vendor/threex/THREEx.FullScreen.js"></script>
+    <script src="scripts/vendor/threex/THREEx.WindowResize.js"></script>
+    <script src="scripts/vendor/three.js/OrbitControls.js"></script>
+    <script src="scripts/vendor/three.js/TransformControls.js"></script>
+    <script src="scripts/vendor/EventDispatcher.js"></script>
+    <script src="scripts/js/THREERobot.js"></script>
+
+    <link rel="shortcut icon" href="favicon.ico">
+</head>
+<body>
+
+
+<button class="connectServer">connect</button>
+<button class="createSubscription">subcript</button>
+
+<div id="container">
+    <div class="robot1">
+        <script type="text/javascript">
+            var debug = {}
+            requirejs.config({
+                baseUrl: '../scripts/js',
+                paths: {
+                    State: '../vendor/state/State',
+                    Kinematic: 'InverseKinematic'
+                },
+            });
+
+            require(['Hmi'], function (Hmi) {
+                let hmi = new Hmi()
+            });
+
+        </script>
+    </div>
+
+    <div class="robot2">
+        <script type="text/javascript">
+            var debug = {}
+            requirejs.config({
+                baseUrl: '../scripts/js',
+                paths: {
+                    State: '../vendor/state/State',
+                    State2: '../vendor/state/State2',
+                    Kinematic: 'InverseKinematic'
+                },
+            });
+
+            require(['Hmi2'], function (Hmi) {
+                let hmi2 = new Hmi()
+            })
+        </script>
+    </div>
+</div>
+
+</body>
+</html>

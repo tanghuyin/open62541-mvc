@@ -131,11 +131,11 @@ int main(void) {
     UA_NodeId link2_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &link2_angle_angleValue_Id, link2_angle_angleValue_paths);
 
-    char *link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
+    char *link3_angle_angleValue_paths[4] = {"mySecondRobot", "link3", "angle", "angleValue"};
     UA_NodeId link3_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &link3_angle_angleValue_Id, link3_angle_angleValue_paths);
 
-    char *link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
+    char *link4_angle_angleValue_paths[4] = {"mySecondRobot", "link4", "angle", "angleValue"};
     UA_NodeId link4_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &link4_angle_angleValue_Id, link4_angle_angleValue_paths);
 
