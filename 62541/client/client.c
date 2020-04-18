@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
 #include "Classic6dofKine.h"
 
 UA_Boolean running = true;
@@ -61,7 +62,7 @@ static UA_StatusCode translateBrowsePathsToNodeIdsRequest(UA_Client *client, UA_
     return ret;
 }
 
-// 暂时不用
+// Deprecated
 static UA_StatusCode callMethodGetNodeId(UA_Client *client, char *path, UA_NodeId *returnId) {
     UA_StatusCode retval1;
     UA_String arg = UA_STRING(path);
@@ -104,6 +105,95 @@ void stopHandler(int sign) {
     running = false;
 }
 
+/*
+1. 创建一个订阅请求，使用函数UA_Client_Subscriptions_create()去做，会得到一个订阅ID
+2. 创建一个监测项请求，这里监测Server，其NodeId是UA_NODEID_NUMERIC(0, 2253)
+3. Server能提供很多内容，这里只关注其事件通知器属性，即UA_ATTRIBUTEID_EVENTNOTIFIER
+4. 使用UA_EventFilter创建事件过滤器，然后调用setupSelectClauses()来设置我们关心的事件类型及其Property
+5. 把设置好的事件过滤器放到监测项请求中
+6. 调用UA_Client_MonitoredItems_createEvent()来使用监测项请求去创建监测项，并会得到一个监测项ID
+7. 监测项可以看做是订阅内容，例如你订阅了一个up主，这个up主有各种系列的视频，监测项就是指定哪个系列的视频，当up主更新该系列视频，你就会收到通知
+*/
+#ifdef UA_ENABLE_SUBSCRIPTIONS
+const size_t nSelectClauses = 2;
+
+static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
+               UA_UInt32 monId, void *monContext,
+               size_t nEventFields, UA_Variant *eventFields) 
+{
+    int robotNo = -1;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered received by Robot Client");
+    UA_assert(*(UA_UInt32*)monContext == monId);
+    for(size_t i = 0; i < nEventFields; ++i) {
+        if(UA_Variant_hasScalarType(&eventFields[i], &UA_TYPES[UA_TYPES_UINT16])) {
+            UA_UInt16 severity = *(UA_UInt16 *)eventFields[i].data;
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Severity: %u", severity);
+        } else if (UA_Variant_hasScalarType(&eventFields[i], &UA_TYPES[UA_TYPES_LOCALIZEDTEXT])) {
+            UA_LocalizedText *lt = (UA_LocalizedText *)eventFields[i].data;
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "Message: %d", atoi(lt->text.data)); // C语言这个库传字符串有问题，总会多点东西，只好用数字
+            robotNo = atoi(lt->text.data);
+        }
+        else {
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                        "Don't know how to handle type: '%s'", eventFields[i].type->typeName);
+        }
+    }
+
+    if (robotNo == 1) {
+
+    } else if (robotNo == 2) {
+        
+    }
+}
+
+/*
+typedef struct {
+    UA_NodeId typeDefinitionId;
+    size_t browsePathSize;
+    UA_QualifiedName *browsePath;
+    UA_UInt32 attributeId;
+    UA_String indexRange;
+} UA_SimpleAttributeOperand;
+*/
+
+static UA_SimpleAttributeOperand *setupSelectClauses(void) 
+{
+    UA_SimpleAttributeOperand *selectClauses = (UA_SimpleAttributeOperand*)
+        UA_Array_new(nSelectClauses, &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]);
+    if(!selectClauses)
+        return NULL;
+
+    for(size_t i =0; i<nSelectClauses; ++i) {
+        UA_SimpleAttributeOperand_init(&selectClauses[i]);
+    }
+
+    selectClauses[0].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+    selectClauses[0].browsePathSize = 1;
+    selectClauses[0].browsePath = (UA_QualifiedName*)
+        UA_Array_new(selectClauses[0].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    if(!selectClauses[0].browsePath) {
+        UA_SimpleAttributeOperand_delete(selectClauses);
+        return NULL;
+    }
+    selectClauses[0].attributeId = UA_ATTRIBUTEID_VALUE;
+    selectClauses[0].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "Message");
+
+    selectClauses[1].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+    selectClauses[1].browsePathSize = 1;
+    selectClauses[1].browsePath = (UA_QualifiedName*)
+        UA_Array_new(selectClauses[1].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    if(!selectClauses[1].browsePath) {
+        UA_SimpleAttributeOperand_delete(selectClauses);
+        return NULL;
+    }
+    selectClauses[1].attributeId = UA_ATTRIBUTEID_VALUE;
+    selectClauses[1].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "Severity");
+
+    return selectClauses;
+}
+#endif
+
 int main(void) {
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
@@ -120,100 +210,158 @@ int main(void) {
 
     printf("%s", "SUCESSFULLY ESTABLISHED\n");
 
+#ifdef UA_ENABLE_SUBSCRIPTIONS
+    // 创建一个订阅请求与接受
+    UA_CreateSubscriptionRequest request = UA_CreateSubscriptionRequest_default();
+    UA_CreateSubscriptionResponse response = UA_Client_Subscriptions_create(client, request, NULL, NULL, NULL);
+    UA_UInt32 subId = response.subscriptionId;
+    if (response.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+        UA_Client_disconnect(client);
+        UA_Client_delete(client);
+        return EXIT_FAILURE;
+    }
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "创建订阅请求完成, id是 %u", subId);
 
+    // 创建一个监测项请求，这里监测Server，其NodeId是UA_NODEID_NUMERIC(0, 2253)
+    UA_MonitoredItemCreateRequest item;
+    UA_MonitoredItemCreateRequest_init(&item);
+    item.itemToMonitor.nodeId = UA_NODEID_NUMERIC(0, 2253); // Root->Objects->Server
+    item.itemToMonitor.attributeId = UA_ATTRIBUTEID_EVENTNOTIFIER;
+    item.monitoringMode = UA_MONITORINGMODE_REPORTING;
+
+    // Server能提供很多内容，这里只关注其事件通知器属性，即UA_ATTRIBUTEID_EVENTNOTIFIER
+    // 使用UA_EventFilter创建事件过滤器，然后调用setupSelectClauses()来设置我们关心的事件类型及其Property
+    UA_EventFilter filter;
+    UA_EventFilter_init(&filter);
+    filter.selectClauses = setupSelectClauses();
+    filter.selectClausesSize = nSelectClauses;
+    // 配置代码
+    item.requestedParameters.filter.encoding = UA_EXTENSIONOBJECT_DECODED;
+    item.requestedParameters.filter.content.decoded.data = &filter;
+    item.requestedParameters.filter.content.decoded.type = &UA_TYPES[UA_TYPES_EVENTFILTER];
+    // 调用UA_Client_MonitoredItems_createEvent()来使用监测项请求去创建监测项，并会得到一个监测项ID
+    UA_UInt32 monId = 0;
+    UA_MonitoredItemCreateResult result =
+        UA_Client_MonitoredItems_createEvent(client, subId,
+                                             UA_TIMESTAMPSTORETURN_BOTH, item,
+                                             &monId, handler_events, NULL);
+    if(result.statusCode != UA_STATUSCODE_GOOD) {
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                    "监控失败 %s", UA_StatusCode_name(retval));
+        goto cleanup;
+    } else {
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                    "监控 'Root->Objects->Server', id %u", response.subscriptionId);
+    }
+    monId = result.monitoredItemId;
+    // 监控代码完成
 
     // WARNING: 必须用取地址的方式
-    char *link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
-    UA_NodeId link1_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link1_angle_angleValue_Id, link1_angle_angleValue_paths);
+    // ROBOT 1
+    char *robot1_link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
+    UA_NodeId robot1_link1_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link1_angle_angleValue_Id, robot1_link1_angle_angleValue_paths);
     
-    char *link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
-    UA_NodeId link2_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link2_angle_angleValue_Id, link2_angle_angleValue_paths);
+    char *robot1_link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
+    UA_NodeId robot1_link2_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link2_angle_angleValue_Id, robot1_link2_angle_angleValue_paths);
 
-    char *link3_angle_angleValue_paths[4] = {"mySecondRobot", "link3", "angle", "angleValue"};
-    UA_NodeId link3_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link3_angle_angleValue_Id, link3_angle_angleValue_paths);
+    char *robot1_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
+    UA_NodeId robot1_link3_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link3_angle_angleValue_Id, robot1_link3_angle_angleValue_paths);
 
-    char *link4_angle_angleValue_paths[4] = {"mySecondRobot", "link4", "angle", "angleValue"};
-    UA_NodeId link4_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link4_angle_angleValue_Id, link4_angle_angleValue_paths);
+    char *robot1_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
+    UA_NodeId robot1_link4_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link4_angle_angleValue_Id, robot1_link4_angle_angleValue_paths);
 
-    char *link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
-    UA_NodeId link5_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link5_angle_angleValue_Id, link5_angle_angleValue_paths);
+    char *robot1_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
+    UA_NodeId robot1_link5_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link5_angle_angleValue_Id, robot1_link5_angle_angleValue_paths);
 
-    char *link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
-    UA_NodeId link6_angle_angleValue_Id;
-    translateBrowsePathsToNodeIdsRequest(client, &link6_angle_angleValue_Id, link6_angle_angleValue_paths);
+    char *robot1_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
+    UA_NodeId robot1_link6_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot1_link6_angle_angleValue_Id, robot1_link6_angle_angleValue_paths);
+    
+    // ROBOT 2
+    char *robot2_link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
+    UA_NodeId robot2_link1_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link1_angle_angleValue_Id, robot2_link1_angle_angleValue_paths);
+    
+    char *robot2_link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
+    UA_NodeId robot2_link2_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link2_angle_angleValue_Id, robot2_link2_angle_angleValue_paths);
 
-    // UA_NodeId link1_angle_angleValue_Id;
-    // char *link1_angle_angleValue_path = "link1_angle_angleValue_";
-    // callMethodGetNodeId(client, link1_angle_angleValue_path, &link1_angle_angleValue_Id);
+    char *robot2_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
+    UA_NodeId robot2_link3_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link3_angle_angleValue_Id, robot2_link3_angle_angleValue_paths);
 
-    // UA_NodeId link2_angle_angleValue_Id;
-    // char *link2_angle_angleValue_path = "link2_angle_angleValue_";
-    // callMethodGetNodeId(client, link2_angle_angleValue_path, &link2_angle_angleValue_Id);
+    char *robot2_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
+    UA_NodeId robot2_link4_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link4_angle_angleValue_Id, robot2_link4_angle_angleValue_paths);
 
-    // UA_NodeId link3_angle_angleValue_Id;
-    // char *link3_angle_angleValue_path = "link3_angle_angleValue_";
-    // callMethodGetNodeId(client, link3_angle_angleValue_path, &link3_angle_angleValue_Id);
+    char *robot2_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
+    UA_NodeId robot2_link5_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link5_angle_angleValue_Id, robot2_link5_angle_angleValue_paths);
 
-    // UA_NodeId link4_angle_angleValue_Id;
-    // char *link4_angle_angleValue_path = "link4_angle_angleValue_";
-    // callMethodGetNodeId(client, link4_angle_angleValue_path, &link4_angle_angleValue_Id);
-
-    // UA_NodeId link5_angle_angleValue_Id;
-    // char *link5_angle_angleValue_path = "link5_angle_angleValue_";
-    // callMethodGetNodeId(client, link5_angle_angleValue_path, &link5_angle_angleValue_Id);
-
-    // UA_NodeId link6_angle_angleValue_Id;
-    // char *link6_angle_angleValue_path = "link6_angle_angleValue_";
-    // callMethodGetNodeId(client, link6_angle_angleValue_path, &link6_angle_angleValue_Id);
-
-    // UA_Double link1_angle_angleValue = 13.0;
-    // UA_Variant newValue;
-    // UA_Variant_init(&newValue);
-    // UA_Variant_setScalar(&newValue, &link1_angle_angleValue, &UA_TYPES[UA_TYPES_DOUBLE]);
-    // retval = UA_Client_writeValueAttribute(client, *link1_angle_angleValue_Id, &newValue);
-    // if (retval == UA_STATUSCODE_GOOD) {
-
-    // }
+    char *robot2_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
+    UA_NodeId robot2_link6_angle_angleValue_Id;
+    translateBrowsePathsToNodeIdsRequest(client, &robot2_link6_angle_angleValue_Id, robot2_link6_angle_angleValue_paths);
 
     
-
-    int joint;
-    while (1) {
-        printf("quit 'q' or continue 'c' ?");
-        scanf(" %c", &ch);
-		printf("%c\n", ch);
-		if ('q' == ch) break;
-        while ((ch = getchar()) != '\n' && ch != EOF);
-
-        printf("input q:=");
-		scanf("%f %f %f %f %f %f", &q[0], &q[1], &q[2], &q[3], &q[4], &q[5]);
-        for (joint = 0; joint < 6; joint++) {
-			q[joint] *= (3.14159265f / 180.0f);
-		}
-        classic6dofForKine(q, &pose);
-        printf("FK      :=< %.6f, %.6f, %.6f, %.6f, %.6f, %.6f >\n", pose.X, pose.Y, pose.Z, pose.A, pose.B, pose.C);
-        classic6dofInvKine(&pose, q_last, &q_sol);
-        for (joint = 0; joint < 6; joint++) {
-			q_sol.sol[0][joint] *= (180.0f / 3.14159265f);
-		}
-        joint = 0;
-        writeServerValueDouble(client, link1_angle_angleValue_Id, q_sol.sol[joint][0]);
-        writeServerValueDouble(client, link2_angle_angleValue_Id, q_sol.sol[joint][1]);
-        writeServerValueDouble(client, link3_angle_angleValue_Id, q_sol.sol[joint][2]);
-        writeServerValueDouble(client, link4_angle_angleValue_Id, q_sol.sol[joint][3]);
-        writeServerValueDouble(client, link5_angle_angleValue_Id, q_sol.sol[joint][4]);
-        writeServerValueDouble(client, link6_angle_angleValue_Id, q_sol.sol[joint][5]);
-		printf("q[%d]    :=< %.6f, %.6f, %.6f, %.6f, %.6f, %.6f >\n", joint, q_sol.sol[joint][0], q_sol.sol[joint][1], q_sol.sol[joint][2], q_sol.sol[joint][3], q_sol.sol[joint][4], q_sol.sol[joint][5]);
+    #define MAX_LINE 1024
+    char buf[MAX_LINE];
+    FILE *fp;
+    if ((fp = fopen("C:\\Users\\17222\\Desktop\\path2.txt", "r")) == NULL) {
+        perror("fail to read");
     }
 
-    UA_Client_delete(client);
+    int len;
+    printf("%s", "FIRST ROBOT START");
+    /*
+    while (fgets(buf, MAX_LINE, fp) != NULL) {
+        len = strlen(buf);
+        buf[len-1] = '\0';
+        if (len == 1) {
+            clock_t endwait;
+            endwait = clock() + 50; // 100ms
+            while (clock() < endwait) {
 
-    return EXIT_SUCCESS;
+            }
+        } else {
+            if (buf[11] == '0') {
+                double A0 = -atof(buf+14);
+                writeServerValueDouble(client, robot1_link1_angle_angleValue_Id, A0);
+            } else if (buf[11] == '1') {
+                double A1 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link2_angle_angleValue_Id, A1);
+            } else if (buf[11] == '2') {
+                double A2 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link3_angle_angleValue_Id, A2);
+            } else if (buf[11] == '3') {
+                double A3 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link4_angle_angleValue_Id, A3);
+            } else if (buf[11] == '4') {
+                double A4 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link5_angle_angleValue_Id, A4);
+            } else if (buf[11] == '5') {
+                double A5 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link6_angle_angleValue_Id, A5);
+            }
+        }
+    }
+    */
+    printf("%s", "FIRST ROBOT END");
+    while (running) {
+        retval = UA_Client_run_iterate(client, 100);
+    }
+cleanup:
+    UA_MonitoredItemCreateResult_clear(&result);
+    UA_Client_Subscriptions_deleteSingle(client, response.subscriptionId);
+    UA_Array_delete(filter.selectClauses, nSelectClauses, &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]);
+#endif
+    UA_Client_disconnect(client);
+    UA_Client_delete(client);
+    return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 
     
 }

@@ -130,7 +130,7 @@ public class ClientServiceImpl implements ClientService {
         // 关节值节点的订阅
         UaSubscription angleSubscription = client.getSubscriptionManager().createSubscription(100.0).get();
         UaSubscription angleSubscription2 = client.getSubscriptionManager().createSubscription(100.0).get();
-
+        
         // IMPORTANT: client handle must be unique per item within the context of a subscription.
         // ROBOT1
         Queue<MonitoringParameters> parametersQueue = createParametersList(
@@ -143,7 +143,7 @@ public class ClientServiceImpl implements ClientService {
         );
 
         BiConsumer<UaMonitoredItem, Integer> onItemCreated =
-                (item, id) -> item.setValueConsumer(this::onSubscriptionValue);
+                (item, id) -> item.setValueConsumer(this::onSubscriptionValue); // 接收到新值的回调函数
 
         List<MonitoredItemCreateRequest> requests =
                 createMonitoredItemCreateRequest(nodeIdInAngleSubscription, parametersQueue);
@@ -207,12 +207,18 @@ public class ClientServiceImpl implements ClientService {
         return isSuccess;
     }
 
+    @Override
+    public void assignWork(int i) {
+        logger.info("分配给第 {} 个机器人拾取任务", i);
+        // 开始修改某个值，并且机器人客户端订阅该值
+    }
+
     private void onSubscriptionValue(UaMonitoredItem item, DataValue value) {
         logger.info(
                 "robot1: subscription value received: item={}, value={}",
                 nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), value.getValue());
         RobotAngleData data = new RobotAngleData(
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), (int) Math.round((Double) value.getValue().getValue()), 1
+                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), (Double) value.getValue().getValue(), 1
         );
         robotAngleDataDao.put(data);
     }
@@ -222,7 +228,7 @@ public class ClientServiceImpl implements ClientService {
                 "robot2: subscription value received: item={}, value={}",
                 nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, value.getValue());
         RobotAngleData data = new RobotAngleData(
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, (int) Math.round((Double) value.getValue().getValue()), 2
+                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, (Double) value.getValue().getValue(), 2
         );
         robotAngleDataDao.put(data);
     }

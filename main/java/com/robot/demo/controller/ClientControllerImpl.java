@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
@@ -51,6 +52,16 @@ public class ClientControllerImpl implements ClientController {
         updateService.updateAngleStart();
         return "success";
     }
+
+    @Override
+    @RequestMapping(path = {"assignWork"}, method = {RequestMethod.GET})
+    @ResponseBody
+    public String assignWorkToClient(@RequestParam(value = "robotId", required = true) int robotId) throws Exception {
+        clientService.assignWork(robotId);
+        return "success";
+    }
+
+
 
     @Override
     public boolean disconnect() {

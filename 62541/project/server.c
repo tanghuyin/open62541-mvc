@@ -2,7 +2,7 @@
 
 #include <signal.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include "myNS.h"
 #include "utils.h"
 #include "hashmap.h"
@@ -15,6 +15,9 @@ static void stopHandler(int sign) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "receive ctrl-c");
     running = false;
 }
+
+// event的node
+static UA_NodeId RobotJobEventTypeId;
 
 // 读取现在的时间
 static UA_StatusCode readCurrentTime(UA_Server *server,
@@ -1158,6 +1161,101 @@ static void addGetNodeIdMethod(UA_Server *server) {
 }
 
 
+static UA_StatusCode addRobotJobEventType(UA_Server *server) {
+    UA_ObjectTypeAttributes attr = UA_ObjectTypeAttributes_default;
+    attr.displayName = UA_LOCALIZEDTEXT("en-US", "RobotJobEventType");
+    attr.description = UA_LOCALIZEDTEXT("en-US", "An event which will assign the robot a job");
+    return UA_Server_addObjectTypeNode(server, UA_NODEID_NULL,
+                                        UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE),
+                                        UA_NODEID_NUMERIC(0, UA_NS0ID_HASSUBTYPE),
+                                        UA_QUALIFIEDNAME(0, "AssignRobotJobEventType"),
+                                        attr, NULL, &RobotJobEventTypeId);
+}
+
+static UA_StatusCode setUpRobotJobEvent(UA_Server *server, UA_NodeId *outId, UA_LocalizedText *eventMessage) {
+    UA_StatusCode retval = UA_Server_createEvent(server, RobotJobEventTypeId, outId);
+    if (retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
+                       "createEvent failed. StatusCode %s", UA_StatusCode_name(retval));
+        return retval;
+    }
+
+    UA_DateTime eventTime = UA_DateTime_now();
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Time"),
+                                         &eventTime, &UA_TYPES[UA_TYPES_DATETIME]);
+
+    UA_UInt16 eventSeverity = 100;
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Severity"),
+                                         &eventSeverity, &UA_TYPES[UA_TYPES_UINT16]);
+
+    // UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", "An event has been generated.");
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Message"),
+                                         eventMessage, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+
+    UA_String eventSourceName = UA_STRING("Monitor Client");
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "SourceName"),
+                                         &eventSourceName, &UA_TYPES[UA_TYPES_STRING]);
+    return UA_STATUSCODE_GOOD;
+}
+
+
+static UA_StatusCode generateRobotJobEventMethodCallback(UA_Server *server,
+                         const UA_NodeId *sessionId, void *sessionHandle,
+                         const UA_NodeId *methodId, void *methodContext,
+                         const UA_NodeId *objectId, void *objectContext,
+                         size_t inputSize, const UA_Variant *input,
+                         size_t outputSize, UA_Variant *output) 
+{
+
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered");
+
+    UA_Int16 *robotNo = (UA_Int16*) input->data;
+    char robotNoC[2];
+    sprintf(robotNoC, "%d", (*robotNo));
+    UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", robotNoC);
+    /* set up event */
+    UA_NodeId eventNodeId;
+    UA_StatusCode retval = setUpRobotJobEvent(server, &eventNodeId, &eventMessage);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                       "Creating event failed. StatusCode %s", UA_StatusCode_name(retval));
+        return retval;
+    }
+
+    retval = UA_Server_triggerEvent(server, eventNodeId,
+                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
+                                    NULL, UA_TRUE);
+    if(retval != UA_STATUSCODE_GOOD)
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                       "Triggering event failed. StatusCode %s", UA_StatusCode_name(retval));
+
+    return retval;
+}
+
+
+static void addGenerateRobotJobEventMethod(UA_Server *server) 
+{
+    UA_Argument inputArgument;
+    UA_Argument_init(&inputArgument);
+    inputArgument.description = UA_LOCALIZEDTEXT("en-US", "Robot No");
+    inputArgument.name = UA_STRING("MyInput");
+    inputArgument.dataType = UA_TYPES[UA_TYPES_INT16].typeId;
+    inputArgument.valueRank = UA_VALUERANK_SCALAR;
+
+    UA_MethodAttributes generateAttr = UA_MethodAttributes_default;
+    generateAttr.description = UA_LOCALIZEDTEXT("en-US","Generate an Robot Job event.");
+    generateAttr.displayName = UA_LOCALIZEDTEXT("en-US","Generate Event");
+    generateAttr.executable = true;
+    generateAttr.userExecutable = true;
+    UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(1, 62542),
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_HASORDEREDCOMPONENT),
+                            UA_QUALIFIEDNAME(1, "Generate RobotJobEvent"),
+                            generateAttr, &generateRobotJobEventMethodCallback,
+                            1, &inputArgument, 0, NULL, NULL, NULL);
+}
+
+
 
 int main(void) {
     signal(SIGINT, stopHandler);
@@ -1230,6 +1328,14 @@ int main(void) {
         3D Model(given by w.dai)
         Physic
         */
+
+        // 事件
+        UA_NodeId RobotJobEventTypeId;
+        UA_NodeId RobotJobEventId;
+        addRobotJobEventType(server);
+        addGenerateRobotJobEventMethod(server);
+        
+
         int ret;
 
         // Robot1 的node

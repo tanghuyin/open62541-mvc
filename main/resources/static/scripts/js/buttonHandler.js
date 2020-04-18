@@ -36,4 +36,34 @@ define(() => {
             }
         })
     }
+
+    $(".assignFirst").click(function () {
+        assignFirst();
+    })
+
+    function assignFirst() {
+        $.ajax({
+            type: "GET",
+            contentType: "html",
+            url: "/assignWork?robotId=1",
+            success: function (msg) {
+
+            }
+        })
+    }
+
+    $(".assignSecond").click(function () {
+        assignSecond();
+    })
+
+    function assignSecond() {
+        $.ajax({
+            type: "GET",
+            contentType: "html",
+            url: "/assignWork?robotId=2",
+            success: function (msg) {
+
+            }
+        })
+    }
 })

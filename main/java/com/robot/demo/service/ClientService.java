@@ -9,4 +9,5 @@ public interface ClientService {
     boolean connectServer();
     boolean createSubscription() throws ExecutionException, InterruptedException;
     boolean disconnectServer();
+    void assignWork(int i);
 }
