@@ -4,15 +4,49 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <pthread.h>
+#include <semaphore.h>
 #include "Classic6dofKine.h"
 
 UA_Boolean running = true;
-float q0[6] = { 0,0,0,0,0,0 };
-float q[6] = { 0,0,1.570796f,0,1.570796f,0 };
-float q_last[6] = { 0,0,0,0,0,0 };
-Kine6d pose;
-Kine6dSol q_sol;
-char ch = '\0';
+// 关节值的节点名
+// robot1
+char *robot1_link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
+char *robot1_link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
+char *robot1_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
+char *robot1_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
+char *robot1_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
+char *robot1_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
+// robot2
+char *robot2_link1_angle_angleValue_paths[4] = {"mySecondRobot", "link1", "angle", "angleValue"};
+char *robot2_link2_angle_angleValue_paths[4] = {"mySecondRobot", "link2", "angle", "angleValue"};
+char *robot2_link3_angle_angleValue_paths[4] = {"mySecondRobot", "link3", "angle", "angleValue"};
+char *robot2_link4_angle_angleValue_paths[4] = {"mySecondRobot", "link4", "angle", "angleValue"};
+char *robot2_link5_angle_angleValue_paths[4] = {"mySecondRobot", "link5", "angle", "angleValue"};
+char *robot2_link6_angle_angleValue_paths[4] = {"mySecondRobot", "link6", "angle", "angleValue"};
+// 关节值的NodeId
+// robot1
+UA_NodeId robot1_link1_angle_angleValue_Id;
+UA_NodeId robot1_link2_angle_angleValue_Id;
+UA_NodeId robot1_link3_angle_angleValue_Id;
+UA_NodeId robot1_link4_angle_angleValue_Id;
+UA_NodeId robot1_link5_angle_angleValue_Id;
+UA_NodeId robot1_link6_angle_angleValue_Id;
+// robot2
+UA_NodeId robot2_link1_angle_angleValue_Id;
+UA_NodeId robot2_link2_angle_angleValue_Id;
+UA_NodeId robot2_link3_angle_angleValue_Id;
+UA_NodeId robot2_link4_angle_angleValue_Id;
+UA_NodeId robot2_link5_angle_angleValue_Id;
+UA_NodeId robot2_link6_angle_angleValue_Id;
+// Job Size
+int robot1_job_size = 0;
+int robot2_job_size = 0;
+pthread_mutex_t robot1_mutex;
+pthread_mutex_t robot2_mutex;
+pthread_mutex_t write_mutex;
+sem_t robot1_sem;
+sem_t robot2_sem;
 
 
 // 查询节点id的包装函数, 官方用法
@@ -88,41 +122,148 @@ static UA_StatusCode callMethodGetNodeId(UA_Client *client, char *path, UA_NodeI
 }
 
 static UA_StatusCode writeServerValueDouble(UA_Client *client, const UA_NodeId id, double value) {
+    UA_UInt32 reqId = 0;
     UA_StatusCode retval;
     UA_Double link1_angle_angleValue = value;
     UA_Variant newValue;
     UA_Variant_init(&newValue);
     UA_Variant_setScalar(&newValue, &link1_angle_angleValue, &UA_TYPES[UA_TYPES_DOUBLE]);
-    retval = UA_Client_writeValueAttribute(client, id, &newValue);
+    // retval = UA_Client_writeValueAttribute(client, id, &newValue);
+    UA_Client_writeValueAttribute_async(client, id, &newValue, NULL, NULL, &reqId);
     if (retval == UA_STATUSCODE_GOOD) {
 
     }
     return retval;
 }
 
+void assignWorkToRobot1(UA_Client *client) {
+    #define MAX_LINE 1024
+    char buf[MAX_LINE];
+    FILE *fp;
+    if ((fp = fopen("C:\\Users\\17222\\Desktop\\path1.txt", "r")) == NULL) {
+        perror("fail to read");
+    }
+    int len;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "First Robot START!");
+    while (fgets(buf, MAX_LINE, fp) != NULL) {
+        len = strlen(buf);
+        buf[len-1] = '\0';
+        if (len == 1) {
+            UA_sleep_ms(50);
+        } else {
+            pthread_mutex_lock(&write_mutex);
+            if (buf[11] == '0') {
+                double A0 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link1_angle_angleValue_Id, A0);
+            } else if (buf[11] == '1') {
+                double A1 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link2_angle_angleValue_Id, A1);
+            } else if (buf[11] == '2') {
+                double A2 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link3_angle_angleValue_Id, A2);
+            } else if (buf[11] == '3') {
+                double A3 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link4_angle_angleValue_Id, A3);
+            } else if (buf[11] == '4') {
+                double A4 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link5_angle_angleValue_Id, A4);
+            } else if (buf[11] == '5') {
+                double A5 = atof(buf+14);
+                writeServerValueDouble(client, robot1_link6_angle_angleValue_Id, A5);
+            }
+            pthread_mutex_unlock(&write_mutex);
+        }
+    }
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "First Robot END!");
+}
+
+void assignWorkToRobot2(UA_Client *client) {
+    #define MAX_LINE 1024
+    char buf[MAX_LINE];
+    FILE *fp;
+    if ((fp = fopen("C:\\Users\\17222\\Desktop\\path2.txt", "r")) == NULL) {
+        perror("fail to read");
+    }
+    int len;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Second Robot START!");
+    while (fgets(buf, MAX_LINE, fp) != NULL) {
+        len = strlen(buf);
+        buf[len-1] = '\0';
+        if (len == 1) {
+            UA_sleep_ms(50);
+        } else {
+            pthread_mutex_lock(&write_mutex);
+            if (buf[11] == '0') {
+                double A0 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link1_angle_angleValue_Id, A0);
+            } else if (buf[11] == '1') {
+                double A1 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link2_angle_angleValue_Id, A1);
+            } else if (buf[11] == '2') {
+                double A2 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link3_angle_angleValue_Id, A2);
+            } else if (buf[11] == '3') {
+                double A3 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link4_angle_angleValue_Id, A3);
+            } else if (buf[11] == '4') {
+                double A4 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link5_angle_angleValue_Id, A4);
+            } else if (buf[11] == '5') {
+                double A5 = atof(buf+14);
+                writeServerValueDouble(client, robot2_link6_angle_angleValue_Id, A5);
+            }
+            pthread_mutex_unlock(&write_mutex);
+        }
+    }
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Second Robot END!");
+}
+
+void *robot1_consumer(void *arg) {
+    UA_Client *client;
+    client = (UA_Client *) arg;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1消费者线程启动");
+    while (1) {
+        sem_wait(&robot1_sem);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1开始执行任务");
+        assignWorkToRobot1(client);
+        pthread_mutex_lock(&robot1_mutex);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1结束执行任务, 任务数为%d", --robot1_job_size);
+        pthread_mutex_unlock(&robot1_mutex);
+    }
+}
+
+void *robot2_consumer(void *arg) {
+    UA_Client *client;
+    client = (UA_Client *) arg;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2消费者线程启动");
+    while (1) {
+        sem_wait(&robot2_sem);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2开始执行任务");
+        assignWorkToRobot2(client);
+        pthread_mutex_lock(&robot2_mutex);
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2结束执行任务, 任务数为%d", --robot2_job_size);
+        pthread_mutex_unlock(&robot2_mutex);
+    }
+}
+
+
 void stopHandler(int sign) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_SERVER, "received ctrl-c");
     running = false;
 }
 
-/*
-1. 创建一个订阅请求，使用函数UA_Client_Subscriptions_create()去做，会得到一个订阅ID
-2. 创建一个监测项请求，这里监测Server，其NodeId是UA_NODEID_NUMERIC(0, 2253)
-3. Server能提供很多内容，这里只关注其事件通知器属性，即UA_ATTRIBUTEID_EVENTNOTIFIER
-4. 使用UA_EventFilter创建事件过滤器，然后调用setupSelectClauses()来设置我们关心的事件类型及其Property
-5. 把设置好的事件过滤器放到监测项请求中
-6. 调用UA_Client_MonitoredItems_createEvent()来使用监测项请求去创建监测项，并会得到一个监测项ID
-7. 监测项可以看做是订阅内容，例如你订阅了一个up主，这个up主有各种系列的视频，监测项就是指定哪个系列的视频，当up主更新该系列视频，你就会收到通知
-*/
+
 #ifdef UA_ENABLE_SUBSCRIPTIONS
 const size_t nSelectClauses = 2;
+pthread_t a_thread[2]; // robot num thread
+
 
 static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
                UA_UInt32 monId, void *monContext,
                size_t nEventFields, UA_Variant *eventFields) 
 {
     int robotNo = -1;
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered received by Robot Client");
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered received by Robot Client");
     UA_assert(*(UA_UInt32*)monContext == monId);
     for(size_t i = 0; i < nEventFields; ++i) {
         if(UA_Variant_hasScalarType(&eventFields[i], &UA_TYPES[UA_TYPES_UINT16])) {
@@ -141,9 +282,18 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
     }
 
     if (robotNo == 1) {
-
+        pthread_mutex_lock(&robot1_mutex);
+        robot1_job_size++;
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1增加任务，任务数为%d", robot1_job_size);
+        pthread_mutex_unlock(&robot1_mutex);
+        sem_post(&robot1_sem);
     } else if (robotNo == 2) {
-        
+        pthread_mutex_lock(&robot2_mutex);
+        robot2_job_size++;
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2增加任务，任务数为%d", robot2_job_size);
+        pthread_mutex_unlock(&robot2_mutex);
+        sem_post(&robot2_sem);
+        // assignWorkToRobot2(client);
     }
 }
 
@@ -197,8 +347,6 @@ static UA_SimpleAttributeOperand *setupSelectClauses(void)
 int main(void) {
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
-    // robot
-    pose.fgR = 0;
 
     UA_Client *client = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(client));
@@ -209,7 +357,25 @@ int main(void) {
     }
 
     printf("%s", "SUCESSFULLY ESTABLISHED\n");
-
+    // 多线程初始化
+    pthread_mutex_init(&robot1_mutex, NULL);
+    pthread_mutex_init(&robot2_mutex, NULL);
+    pthread_mutex_init(&write_mutex, NULL);
+    sem_init(&robot1_sem, 0, 0);
+    sem_init(&robot2_sem, 0, 0);
+    pthread_t robot1_consumer_thread;
+    pthread_t robot2_consumer_thread;
+    pthread_create(&robot1_consumer_thread, NULL, robot1_consumer, (void*)client);
+    pthread_create(&robot2_consumer_thread, NULL, robot2_consumer, (void*)client);
+/*
+1. 创建一个订阅请求，使用函数UA_Client_Subscriptions_create()去做，会得到一个订阅ID
+2. 创建一个监测项请求，这里监测Server，其NodeId是UA_NODEID_NUMERIC(0, 2253)
+3. Server能提供很多内容，这里只关注其事件通知器属性，即UA_ATTRIBUTEID_EVENTNOTIFIER
+4. 使用UA_EventFilter创建事件过滤器，然后调用setupSelectClauses()来设置我们关心的事件类型及其Property
+5. 把设置好的事件过滤器放到监测项请求中
+6. 调用UA_Client_MonitoredItems_createEvent()来使用监测项请求去创建监测项，并会得到一个监测项ID
+7. 监测项可以看做是订阅内容，例如你订阅了一个up主，这个up主有各种系列的视频，监测项就是指定哪个系列的视频，当up主更新该系列视频，你就会收到通知
+*/
 #ifdef UA_ENABLE_SUBSCRIPTIONS
     // 创建一个订阅请求与接受
     UA_CreateSubscriptionRequest request = UA_CreateSubscriptionRequest_default();
@@ -257,110 +423,36 @@ int main(void) {
     // 监控代码完成
 
     // WARNING: 必须用取地址的方式
-    // ROBOT 1
-    char *robot1_link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
-    UA_NodeId robot1_link1_angle_angleValue_Id;
+    // 填充ROBOT 1的地址
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link1_angle_angleValue_Id, robot1_link1_angle_angleValue_paths);
-    
-    char *robot1_link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
-    UA_NodeId robot1_link2_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link2_angle_angleValue_Id, robot1_link2_angle_angleValue_paths);
-
-    char *robot1_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
-    UA_NodeId robot1_link3_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link3_angle_angleValue_Id, robot1_link3_angle_angleValue_paths);
-
-    char *robot1_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
-    UA_NodeId robot1_link4_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link4_angle_angleValue_Id, robot1_link4_angle_angleValue_paths);
-
-    char *robot1_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
-    UA_NodeId robot1_link5_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link5_angle_angleValue_Id, robot1_link5_angle_angleValue_paths);
-
-    char *robot1_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
-    UA_NodeId robot1_link6_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link6_angle_angleValue_Id, robot1_link6_angle_angleValue_paths);
     
-    // ROBOT 2
-    char *robot2_link1_angle_angleValue_paths[4] = {"myFirstRobot", "link1", "angle", "angleValue"};
-    UA_NodeId robot2_link1_angle_angleValue_Id;
+    // 填充ROBOT 2的地址
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link1_angle_angleValue_Id, robot2_link1_angle_angleValue_paths);
-    
-    char *robot2_link2_angle_angleValue_paths[4] = {"myFirstRobot", "link2", "angle", "angleValue"};
-    UA_NodeId robot2_link2_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link2_angle_angleValue_Id, robot2_link2_angle_angleValue_paths);
-
-    char *robot2_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle", "angleValue"};
-    UA_NodeId robot2_link3_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link3_angle_angleValue_Id, robot2_link3_angle_angleValue_paths);
-
-    char *robot2_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
-    UA_NodeId robot2_link4_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link4_angle_angleValue_Id, robot2_link4_angle_angleValue_paths);
-
-    char *robot2_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
-    UA_NodeId robot2_link5_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link5_angle_angleValue_Id, robot2_link5_angle_angleValue_paths);
-
-    char *robot2_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
-    UA_NodeId robot2_link6_angle_angleValue_Id;
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link6_angle_angleValue_Id, robot2_link6_angle_angleValue_paths);
 
-    
-    #define MAX_LINE 1024
-    char buf[MAX_LINE];
-    FILE *fp;
-    if ((fp = fopen("C:\\Users\\17222\\Desktop\\path2.txt", "r")) == NULL) {
-        perror("fail to read");
-    }
-
-    int len;
-    printf("%s", "FIRST ROBOT START");
-    /*
-    while (fgets(buf, MAX_LINE, fp) != NULL) {
-        len = strlen(buf);
-        buf[len-1] = '\0';
-        if (len == 1) {
-            clock_t endwait;
-            endwait = clock() + 50; // 100ms
-            while (clock() < endwait) {
-
-            }
-        } else {
-            if (buf[11] == '0') {
-                double A0 = -atof(buf+14);
-                writeServerValueDouble(client, robot1_link1_angle_angleValue_Id, A0);
-            } else if (buf[11] == '1') {
-                double A1 = atof(buf+14);
-                writeServerValueDouble(client, robot1_link2_angle_angleValue_Id, A1);
-            } else if (buf[11] == '2') {
-                double A2 = atof(buf+14);
-                writeServerValueDouble(client, robot1_link3_angle_angleValue_Id, A2);
-            } else if (buf[11] == '3') {
-                double A3 = atof(buf+14);
-                writeServerValueDouble(client, robot1_link4_angle_angleValue_Id, A3);
-            } else if (buf[11] == '4') {
-                double A4 = atof(buf+14);
-                writeServerValueDouble(client, robot1_link5_angle_angleValue_Id, A4);
-            } else if (buf[11] == '5') {
-                double A5 = atof(buf+14);
-                writeServerValueDouble(client, robot1_link6_angle_angleValue_Id, A5);
-            }
-        }
-    }
-    */
-    printf("%s", "FIRST ROBOT END");
+   
     while (running) {
         retval = UA_Client_run_iterate(client, 100);
     }
-cleanup:
+ cleanup:
     UA_MonitoredItemCreateResult_clear(&result);
     UA_Client_Subscriptions_deleteSingle(client, response.subscriptionId);
     UA_Array_delete(filter.selectClauses, nSelectClauses, &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]);
 #endif
     UA_Client_disconnect(client);
     UA_Client_delete(client);
+    pthread_mutex_destroy(&robot1_mutex);
+    pthread_mutex_destroy(&robot2_mutex);
+    pthread_mutex_destroy(&write_mutex);
     return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 
     

@@ -20,6 +20,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.eclipse.milo.opcua.stack.core.util.annotations.UInt16Primitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +86,7 @@ public class ClientServiceImpl implements ClientService {
                 .build();
 
         client = OpcUaClient.create(config);
+        logger.info("成功连接至OpcUa服务器!");
         return true;
     }
 
@@ -128,15 +130,15 @@ public class ClientServiceImpl implements ClientService {
         };
         List<NodeId> nodeIdInAngleSubscription2 = translateBrowsePathToNodeId(client, paths2);
         // 关节值节点的订阅
-        UaSubscription angleSubscription = client.getSubscriptionManager().createSubscription(100.0).get();
-        UaSubscription angleSubscription2 = client.getSubscriptionManager().createSubscription(100.0).get();
+        UaSubscription angleSubscription = client.getSubscriptionManager().createSubscription(50.0).get();
+        UaSubscription angleSubscription2 = client.getSubscriptionManager().createSubscription(50.0).get();
         
         // IMPORTANT: client handle must be unique per item within the context of a subscription.
         // ROBOT1
         Queue<MonitoringParameters> parametersQueue = createParametersList(
                 angleSubscription,
                 numsInAngleSubscription,
-                100.0,
+                50.0,
                 null,
                 10,
                 true
@@ -154,7 +156,7 @@ public class ClientServiceImpl implements ClientService {
         Queue<MonitoringParameters> parametersQueue2 = createParametersList(
                 angleSubscription2,
                 numsInAngleSubscription,
-                100.0,
+                50.0,
                 null,
                 10,
                 true
@@ -211,26 +213,46 @@ public class ClientServiceImpl implements ClientService {
     public void assignWork(int i) {
         logger.info("分配给第 {} 个机器人拾取任务", i);
         // 开始修改某个值，并且机器人客户端订阅该值
+        NodeId objectId = Identifiers.ObjectsFolder;
+        NodeId generateRobotJobEventMethodId = new NodeId(1, 62542);
+        short input = (short) i;
+        CallMethodRequest request = new CallMethodRequest(
+                objectId,
+                generateRobotJobEventMethodId,
+                new Variant[]{new Variant(input)}
+        );
+        this.client.call(request).thenAccept(result -> {
+            StatusCode statusCode = result.getStatusCode();
+            if (statusCode.isGood()) {
+                logger.info("分配任务给{}成功", i);
+            } else {
+                logger.info("分配任务失败");
+            }
+        });
     }
 
     private void onSubscriptionValue(UaMonitoredItem item, DataValue value) {
-        logger.info(
-                "robot1: subscription value received: item={}, value={}",
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), value.getValue());
-        RobotAngleData data = new RobotAngleData(
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), (Double) value.getValue().getValue(), 1
-        );
-        robotAngleDataDao.put(data);
+        if (value.getValue().getValue() != null) {
+            logger.info(
+                    "robot1: subscription value received: item={}, value={}",
+                    nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), value.getValue());
+            RobotAngleData data = new RobotAngleData(
+                    nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), (Double) value.getValue().getValue(), 1
+            );
+            robotAngleDataDao.put(data);
+        }
     }
 
     private void onSubscriptionValue2(UaMonitoredItem item, DataValue value) {
-        logger.info(
-                "robot2: subscription value received: item={}, value={}",
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, value.getValue());
-        RobotAngleData data = new RobotAngleData(
-                nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, (Double) value.getValue().getValue(), 2
-        );
-        robotAngleDataDao.put(data);
+        if (value.getValue().getValue() != null) {
+            logger.info(
+                    "robot2: subscription value received: item={}, value={}",
+                    nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, value.getValue());
+            RobotAngleData data = new RobotAngleData(
+                    nodeIdToLink.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1) - 6, (Double) value.getValue().getValue(), 2
+            );
+            robotAngleDataDao.put(data);
+        }
     }
 
 

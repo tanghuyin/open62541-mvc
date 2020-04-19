@@ -195,920 +195,257 @@ static void addStatus_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
 
-static void beforeReadlink1_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_Value is to be updated.");
-    updateCurrentlink1_Value(server, *nodeid);
-}
-static void afterWritelink1_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_Value is modified.");
-}
-static void addlink1_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_Value;
-    callback.onWrite = afterWritelink1_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_Value is to be updated.");
-    updateCurrentlink1_angle_Value(server, *nodeid);
-}
-static void afterWritelink1_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_Value is modified.");
-}
-static void addlink1_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_angle_Value;
-    callback.onWrite = afterWritelink1_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink1_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink1_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleDownLimit_Value is modified.");
-}
-static void addlink1_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink1_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink1_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink1_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleUpLimit_Value is modified.");
-}
-static void addlink1_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink1_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_angle_angleValue_Value(UA_Server *server,
+// Robot 1
+static void beforeRead_robot1_link1_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleValue_Value is to be updated.");
     updateCurrentlink1_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink1_angle_angleValue_Value(UA_Server *server,
+static void afterWrite_robot1_link1_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link1_angle_angleValue_Value is modified.");
 }
-static void addlink1_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+static void add_robot1_link1_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_angle_angleValue_Value;
-    callback.onWrite = afterWritelink1_angle_angleValue_Value;
+    callback.onRead = beforeRead_robot1_link1_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link1_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
-static void beforeReadlink1_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_x_Value is to be updated.");
-    updateCurrentlink1_x_Value(server, *nodeid);
-}
-static void afterWritelink1_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_x_Value is modified.");
-}
-static void addlink1_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_x_Value;
-    callback.onWrite = afterWritelink1_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_y_Value is to be updated.");
-    updateCurrentlink1_y_Value(server, *nodeid);
-}
-static void afterWritelink1_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_y_Value is modified.");
-}
-static void addlink1_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_y_Value;
-    callback.onWrite = afterWritelink1_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink1_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_z_Value is to be updated.");
-    updateCurrentlink1_z_Value(server, *nodeid);
-}
-static void afterWritelink1_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_z_Value is modified.");
-}
-static void addlink1_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink1_z_Value;
-    callback.onWrite = afterWritelink1_z_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_Value is to be updated.");
-    updateCurrentlink2_Value(server, *nodeid);
-}
-static void afterWritelink2_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_Value is modified.");
-}
-static void addlink2_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_Value;
-    callback.onWrite = afterWritelink2_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_Value is to be updated.");
-    updateCurrentlink2_angle_Value(server, *nodeid);
-}
-static void afterWritelink2_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_Value is modified.");
-}
-static void addlink2_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_angle_Value;
-    callback.onWrite = afterWritelink2_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink2_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink2_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleDownLimit_Value is modified.");
-}
-static void addlink2_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink2_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink2_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink2_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleUpLimit_Value is modified.");
-}
-static void addlink2_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink2_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_angle_angleValue_Value(UA_Server *server,
+
+static void beforeRead_robot1_link2_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleValue_Value is to be updated.");
     updateCurrentlink2_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink2_angle_angleValue_Value(UA_Server *server,
+
+static void afterWrite_robot1_link2_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link2_angle_angleValue_Value is modified.");
 }
-static void addlink2_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+
+static void add_robot1_link2_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_angle_angleValue_Value;
-    callback.onWrite = afterWritelink2_angle_angleValue_Value;
+    callback.onRead = beforeRead_robot1_link2_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link2_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
-static void beforeReadlink2_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_x_Value is to be updated.");
-    updateCurrentlink2_x_Value(server, *nodeid);
-}
-static void afterWritelink2_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_x_Value is modified.");
-}
-static void addlink2_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_x_Value;
-    callback.onWrite = afterWritelink2_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_y_Value is to be updated.");
-    updateCurrentlink2_y_Value(server, *nodeid);
-}
-static void afterWritelink2_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_y_Value is modified.");
-}
-static void addlink2_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_y_Value;
-    callback.onWrite = afterWritelink2_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink2_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_z_Value is to be updated.");
-    updateCurrentlink2_z_Value(server, *nodeid);
-}
-static void afterWritelink2_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_z_Value is modified.");
-}
-static void addlink2_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink2_z_Value;
-    callback.onWrite = afterWritelink2_z_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_Value is to be updated.");
-    updateCurrentlink3_Value(server, *nodeid);
-}
-static void afterWritelink3_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_Value is modified.");
-}
-static void addlink3_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_Value;
-    callback.onWrite = afterWritelink3_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_Value is to be updated.");
-    updateCurrentlink3_angle_Value(server, *nodeid);
-}
-static void afterWritelink3_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_Value is modified.");
-}
-static void addlink3_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_angle_Value;
-    callback.onWrite = afterWritelink3_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink3_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink3_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleDownLimit_Value is modified.");
-}
-static void addlink3_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink3_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink3_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink3_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleUpLimit_Value is modified.");
-}
-static void addlink3_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink3_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_angle_angleValue_Value(UA_Server *server,
+
+
+static void beforeRead_robot1_link3_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleValue_Value is to be updated.");
     updateCurrentlink3_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink3_angle_angleValue_Value(UA_Server *server,
+static void afterWrite_robot1_link3_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link3_angle_angleValue_Value is modified.");
 }
-static void addlink3_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+static void add_robot1_link3_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_angle_angleValue_Value;
-    callback.onWrite = afterWritelink3_angle_angleValue_Value;
+    callback.onRead = beforeRead_robot1_link3_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link3_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
-static void beforeReadlink3_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_x_Value is to be updated.");
-    updateCurrentlink3_x_Value(server, *nodeid);
-}
-static void afterWritelink3_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_x_Value is modified.");
-}
-static void addlink3_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_x_Value;
-    callback.onWrite = afterWritelink3_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_y_Value is to be updated.");
-    updateCurrentlink3_y_Value(server, *nodeid);
-}
-static void afterWritelink3_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_y_Value is modified.");
-}
-static void addlink3_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_y_Value;
-    callback.onWrite = afterWritelink3_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink3_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_z_Value is to be updated.");
-    updateCurrentlink3_z_Value(server, *nodeid);
-}
-static void afterWritelink3_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_z_Value is modified.");
-}
-static void addlink3_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink3_z_Value;
-    callback.onWrite = afterWritelink3_z_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_Value is to be updated.");
-    updateCurrentlink4_Value(server, *nodeid);
-}
-static void afterWritelink4_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_Value is modified.");
-}
-static void addlink4_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_Value;
-    callback.onWrite = afterWritelink4_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_Value is to be updated.");
-    updateCurrentlink4_angle_Value(server, *nodeid);
-}
-static void afterWritelink4_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_Value is modified.");
-}
-static void addlink4_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_angle_Value;
-    callback.onWrite = afterWritelink4_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink4_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink4_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleDownLimit_Value is modified.");
-}
-static void addlink4_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink4_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink4_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink4_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleUpLimit_Value is modified.");
-}
-static void addlink4_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink4_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_angle_angleValue_Value(UA_Server *server,
+
+static void beforeRead_robot1_link4_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleValue_Value is to be updated.");
     updateCurrentlink4_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink4_angle_angleValue_Value(UA_Server *server,
+static void afterWrite_robot1_link4_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link4_angle_angleValue_Value is modified.");
 }
-static void addlink4_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+static void add_robot1_link4_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_angle_angleValue_Value;
-    callback.onWrite = afterWritelink4_angle_angleValue_Value;
+    callback.onRead = beforeRead_robot1_link4_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link4_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
-static void beforeReadlink4_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_x_Value is to be updated.");
-    updateCurrentlink4_x_Value(server, *nodeid);
-}
-static void afterWritelink4_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_x_Value is modified.");
-}
-static void addlink4_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_x_Value;
-    callback.onWrite = afterWritelink4_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_y_Value is to be updated.");
-    updateCurrentlink4_y_Value(server, *nodeid);
-}
-static void afterWritelink4_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_y_Value is modified.");
-}
-static void addlink4_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_y_Value;
-    callback.onWrite = afterWritelink4_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink4_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_z_Value is to be updated.");
-    updateCurrentlink4_z_Value(server, *nodeid);
-}
-static void afterWritelink4_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_z_Value is modified.");
-}
-static void addlink4_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink4_z_Value;
-    callback.onWrite = afterWritelink4_z_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_Value is to be updated.");
-    updateCurrentlink5_Value(server, *nodeid);
-}
-static void afterWritelink5_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_Value is modified.");
-}
-static void addlink5_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_Value;
-    callback.onWrite = afterWritelink5_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_Value is to be updated.");
-    updateCurrentlink5_angle_Value(server, *nodeid);
-}
-static void afterWritelink5_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_Value is modified.");
-}
-static void addlink5_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_angle_Value;
-    callback.onWrite = afterWritelink5_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink5_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink5_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleDownLimit_Value is modified.");
-}
-static void addlink5_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink5_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink5_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink5_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleUpLimit_Value is modified.");
-}
-static void addlink5_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink5_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_angle_angleValue_Value(UA_Server *server,
+
+static void beforeRead_robot1_link5_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleValue_Value is to be updated.");
     updateCurrentlink5_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink5_angle_angleValue_Value(UA_Server *server,
+static void afterWrite_robot1_link5_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link5_angle_angleValue_Value is modified.");
 }
-static void addlink5_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+
+static void add_robot1_link5_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_angle_angleValue_Value;
-    callback.onWrite = afterWritelink5_angle_angleValue_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_x_Value is to be updated.");
-    updateCurrentlink5_x_Value(server, *nodeid);
-}
-static void afterWritelink5_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_x_Value is modified.");
-}
-static void addlink5_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_x_Value;
-    callback.onWrite = afterWritelink5_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_y_Value is to be updated.");
-    updateCurrentlink5_y_Value(server, *nodeid);
-}
-static void afterWritelink5_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_y_Value is modified.");
-}
-static void addlink5_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_y_Value;
-    callback.onWrite = afterWritelink5_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink5_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_z_Value is to be updated.");
-    updateCurrentlink5_z_Value(server, *nodeid);
-}
-static void afterWritelink5_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_z_Value is modified.");
-}
-static void addlink5_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink5_z_Value;
-    callback.onWrite = afterWritelink5_z_Value;
+    callback.onRead = beforeRead_robot1_link5_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link5_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
 
-static void beforeReadlink6_Value(UA_Server *server,
+static void beforeRead_robot1_link6_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_Value is to be updated.");
-    updateCurrentlink6_Value(server, *nodeid);
-}
-static void afterWritelink6_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_Value is modified.");
-}
-static void addlink6_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_Value;
-    callback.onWrite = afterWritelink6_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_Value is to be updated.");
-    updateCurrentlink6_angle_Value(server, *nodeid);
-}
-static void afterWritelink6_angle_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_Value is modified.");
-}
-static void addlink6_angle_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_angle_Value;
-    callback.onWrite = afterWritelink6_angle_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleDownLimit_Value is to be updated.");
-    updateCurrentlink6_angle_angleDownLimit_Value(server, *nodeid);
-}
-static void afterWritelink6_angle_angleDownLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleDownLimit_Value is modified.");
-}
-static void addlink6_angle_angleDownLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_angle_angleDownLimit_Value;
-    callback.onWrite = afterWritelink6_angle_angleDownLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleUpLimit_Value is to be updated.");
-    updateCurrentlink6_angle_angleUpLimit_Value(server, *nodeid);
-}
-static void afterWritelink6_angle_angleUpLimit_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleUpLimit_Value is modified.");
-}
-static void addlink6_angle_angleUpLimit_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_angle_angleUpLimit_Value;
-    callback.onWrite = afterWritelink6_angle_angleUpLimit_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_angle_angleValue_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleValue_Value is to be updated.");
     updateCurrentlink6_angle_angleValue_Value(server, *nodeid);
 }
-static void afterWritelink6_angle_angleValue_Value(UA_Server *server,
+
+static void afterWrite_robot1_link6_angle_angleValue_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_angle_angleValue_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_link6_angle_angleValue_Value is modified.");
 }
-static void addlink6_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+
+static void add_robot1_link6_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_angle_angleValue_Value;
-    callback.onWrite = afterWritelink6_angle_angleValue_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_x_Value is to be updated.");
-    updateCurrentlink6_x_Value(server, *nodeid);
-}
-static void afterWritelink6_x_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_x_Value is modified.");
-}
-static void addlink6_x_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_x_Value;
-    callback.onWrite = afterWritelink6_x_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_y_Value is to be updated.");
-    updateCurrentlink6_y_Value(server, *nodeid);
-}
-static void afterWritelink6_y_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_y_Value is modified.");
-}
-static void addlink6_y_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_y_Value;
-    callback.onWrite = afterWritelink6_y_Value;
-    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
-}
-static void beforeReadlink6_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_z_Value is to be updated.");
-    updateCurrentlink6_z_Value(server, *nodeid);
-}
-static void afterWritelink6_z_Value(UA_Server *server,
-        const UA_NodeId *sessionId, void *sessionContext,
-        const UA_NodeId *nodeid, void *nodeContext,
-        const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link6_z_Value is modified.");
-}
-static void addlink6_z_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
-    UA_ValueCallback callback;
-    callback.onRead = beforeReadlink6_z_Value;
-    callback.onWrite = afterWritelink6_z_Value;
+    callback.onRead = beforeRead_robot1_link6_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot1_link6_angle_angleValue_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
 
+// robot 2
+static void beforeRead_robot2_link1_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link1_angle_angleValue_Value is to be updated.");
+    updateCurrentlink1_angle_angleValue_Value(server, *nodeid);
+}
+static void afterWrite_robot2_link1_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link1_angle_angleValue_Value is modified.");
+}
+static void add_robot2_link1_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link1_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link1_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+static void beforeRead_robot2_link2_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link2_angle_angleValue_Value is to be updated.");
+    updateCurrentlink2_angle_angleValue_Value(server, *nodeid);
+}
+
+static void afterWrite_robot2_link2_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link2_angle_angleValue_Value is modified.");
+}
+
+static void add_robot2_link2_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link2_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link2_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+
+static void beforeRead_robot2_link3_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link3_angle_angleValue_Value is to be updated.");
+    updateCurrentlink3_angle_angleValue_Value(server, *nodeid);
+}
+static void afterWrite_robot2_link3_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link3_angle_angleValue_Value is modified.");
+}
+static void add_robot2_link3_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link3_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link3_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+static void beforeRead_robot2_link4_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link4_angle_angleValue_Value is to be updated.");
+    updateCurrentlink4_angle_angleValue_Value(server, *nodeid);
+}
+static void afterWrite_robot2_link4_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link4_angle_angleValue_Value is modified.");
+}
+static void add_robot2_link4_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link4_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link4_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+static void beforeRead_robot2_link5_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "link5_angle_angleValue_Value is to be updated.");
+    updateCurrentlink5_angle_angleValue_Value(server, *nodeid);
+}
+static void afterWrite_robot2_link5_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link5_angle_angleValue_Value is modified.");
+}
+
+static void add_robot2_link5_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link5_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link5_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+static void beforeRead_robot2_link6_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    updateCurrentlink6_angle_angleValue_Value(server, *nodeid);
+}
+
+static void afterWrite_robot2_link6_angle_angleValue_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot2_link6_angle_angleValue_Value is modified.");
+}
+
+static void add_robot2_link6_angle_angleValue_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_link6_angle_angleValue_Value;
+    callback.onWrite = afterWrite_robot2_link6_angle_angleValue_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
 // 读回调函数 写回调函数 以及绑定函数的自动生成 code 结束
 
 static UA_StatusCode getNodeIdMethodCallback(UA_Server *server,
@@ -1419,19 +756,19 @@ int main(void) {
         addStatus_CallbackToRobot(server, Status_id);
 
 
-        addlink1_angle_angleValue_CallbackToRobot(server, robot1_link1_angle_angleValue_id);
-        addlink2_angle_angleValue_CallbackToRobot(server, robot1_link2_angle_angleValue_id);
-        addlink3_angle_angleValue_CallbackToRobot(server, robot1_link3_angle_angleValue_id);
-        addlink4_angle_angleValue_CallbackToRobot(server, robot1_link4_angle_angleValue_id);
-        addlink5_angle_angleValue_CallbackToRobot(server, robot1_link5_angle_angleValue_id);
-        addlink6_angle_angleValue_CallbackToRobot(server, robot1_link6_angle_angleValue_id);
+        add_robot1_link1_angle_angleValue_CallbackToRobot(server, robot1_link1_angle_angleValue_id);
+        add_robot1_link2_angle_angleValue_CallbackToRobot(server, robot1_link2_angle_angleValue_id);
+        add_robot1_link3_angle_angleValue_CallbackToRobot(server, robot1_link3_angle_angleValue_id);
+        add_robot1_link4_angle_angleValue_CallbackToRobot(server, robot1_link4_angle_angleValue_id);
+        add_robot1_link5_angle_angleValue_CallbackToRobot(server, robot1_link5_angle_angleValue_id);
+        add_robot1_link6_angle_angleValue_CallbackToRobot(server, robot1_link6_angle_angleValue_id);
         
-        addlink1_angle_angleValue_CallbackToRobot(server, robot2_link1_angle_angleValue_id);
-        addlink2_angle_angleValue_CallbackToRobot(server, robot2_link2_angle_angleValue_id);
-        addlink3_angle_angleValue_CallbackToRobot(server, robot2_link3_angle_angleValue_id);
-        addlink4_angle_angleValue_CallbackToRobot(server, robot2_link4_angle_angleValue_id);
-        addlink5_angle_angleValue_CallbackToRobot(server, robot2_link5_angle_angleValue_id);
-        addlink6_angle_angleValue_CallbackToRobot(server, robot2_link6_angle_angleValue_id);
+        add_robot2_link1_angle_angleValue_CallbackToRobot(server, robot2_link1_angle_angleValue_id);
+        add_robot2_link2_angle_angleValue_CallbackToRobot(server, robot2_link2_angle_angleValue_id);
+        add_robot2_link3_angle_angleValue_CallbackToRobot(server, robot2_link3_angle_angleValue_id);
+        add_robot2_link4_angle_angleValue_CallbackToRobot(server, robot2_link4_angle_angleValue_id);
+        add_robot2_link5_angle_angleValue_CallbackToRobot(server, robot2_link5_angle_angleValue_id);
+        add_robot2_link6_angle_angleValue_CallbackToRobot(server, robot2_link6_angle_angleValue_id);
         
 
         retval = UA_Server_run(server, &running);

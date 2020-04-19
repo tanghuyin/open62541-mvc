@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class RobotAngleDataDao {
     private static final Logger logger = LoggerFactory.getLogger(RobotAngleDataDao.class);
-    private ArrayBlockingQueue fairQueue = new ArrayBlockingQueue(10, true);
+    private ArrayBlockingQueue fairQueue = new ArrayBlockingQueue(50, true);
 
     public void put(RobotAngleData robotAngleData) {
         try {
