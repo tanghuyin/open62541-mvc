@@ -28,7 +28,7 @@
 <button class="assignSecond">将任务分配给机器人2</button>
 
 <div id="container">
-    <div class="robot1">
+    <div id="robot1">
         <script type="text/javascript">
             var debug = {}
             requirejs.config({
@@ -44,9 +44,15 @@
             });
 
         </script>
+        <div id="robot1_status" style="float: right; padding-right: 30%">
+            <p>机器人1剩余工作数: </p>
+            <label id="robot1_job_num">0</label>
+            <br>
+            <button class="robot1Fail">机器人1发生故障</button>
+        </div>
     </div>
 
-    <div class="robot2">
+    <div id="robot2">
         <script type="text/javascript">
             var debug = {}
             requirejs.config({
@@ -62,6 +68,12 @@
                 let hmi2 = new Hmi()
             })
         </script>
+        <div id="robot2_status" style="float: right; padding-right: 30%">
+            <p>机器人2剩余工作数: </p>
+            <label id="robot2_job_num">0</label>
+            <br>
+            <button class="robot2Fail">机器人2发生故障</button>
+        </div>
     </div>
 </div>
 

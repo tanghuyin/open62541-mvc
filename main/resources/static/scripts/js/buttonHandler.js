@@ -66,4 +66,32 @@ define(() => {
             }
         })
     }
+
+    $(".robot1Fail").click(function () {
+        robot1Fail();
+    })
+    function robot1Fail() {
+        $.ajax({
+            type: "GET",
+            contentType: "html",
+            url: "/robotFail?robotId=1",
+            success: function (msg) {
+
+            }
+        })
+    }
+
+    $(".robot2Fail").click(function () {
+        robot2Fail();
+    })
+    function robot2Fail() {
+        $.ajax({
+            type: "GET",
+            contentType: "html",
+            url: "/robotFail?robotId=2",
+            success: function (msg) {
+
+            }
+        })
+    }
 })

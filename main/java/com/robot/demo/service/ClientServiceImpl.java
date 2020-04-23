@@ -20,7 +20,6 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.MonitoringMode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
-import org.eclipse.milo.opcua.stack.core.util.annotations.UInt16Primitive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ import java.security.Security;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -129,6 +127,10 @@ public class ClientServiceImpl implements ClientService {
                 {"mySecondRobot", "link6", "angle", "angleValue"},
         };
         List<NodeId> nodeIdInAngleSubscription2 = translateBrowsePathToNodeId(client, paths2);
+
+        String[][] path3 = {
+                {}
+        };
         // 关节值节点的订阅
         UaSubscription angleSubscription = client.getSubscriptionManager().createSubscription(50.0).get();
         UaSubscription angleSubscription2 = client.getSubscriptionManager().createSubscription(50.0).get();
@@ -227,6 +229,27 @@ public class ClientServiceImpl implements ClientService {
                 logger.info("分配任务给{}成功", i);
             } else {
                 logger.info("分配任务失败");
+            }
+        });
+    }
+
+    @Override
+    public void robotFail(int i) {
+        logger.info("第 {} 个机器人出现故障", i);
+        NodeId objectId = Identifiers.ObjectsFolder;
+        NodeId generateRobotJobEventMethodId = new NodeId(1, 62543);
+        short input = (short) i;
+        CallMethodRequest request = new CallMethodRequest(
+                objectId,
+                generateRobotJobEventMethodId,
+                new Variant[]{new Variant(input)}
+        );
+        this.client.call(request).thenAccept(result -> {
+            StatusCode statusCode = result.getStatusCode();
+            if (statusCode.isGood()) {
+                logger.info("机器人{}罢工", i);
+            } else {
+                logger.info("机器人罢工失败");
             }
         });
     }

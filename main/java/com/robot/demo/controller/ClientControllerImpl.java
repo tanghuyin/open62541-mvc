@@ -61,7 +61,13 @@ public class ClientControllerImpl implements ClientController {
         return "success";
     }
 
-
+    @Override
+    @RequestMapping(path = {"robotFail"}, method = {RequestMethod.GET})
+    @ResponseBody
+    public String robotFail(@RequestParam(value = "robotId", required = true) int robotId) throws Exception {
+        clientService.robotFail(robotId);
+        return "success";
+    }
 
     @Override
     public boolean disconnect() {

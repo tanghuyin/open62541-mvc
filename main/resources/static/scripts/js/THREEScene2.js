@@ -11,7 +11,7 @@ define((require, exports, module) => {
     renderer.setClearColor(0x333333)
 
     renderer.setSize(window.innerWidth / 2, window.innerHeight / 2)
-    document.getElementById('container').appendChild(renderer.domElement)
+    document.getElementById('robot2').appendChild(renderer.domElement)
 
     // create a scene
     const scene = new THREE.Scene()

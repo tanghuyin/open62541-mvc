@@ -10,4 +10,5 @@ public interface ClientService {
     boolean createSubscription() throws ExecutionException, InterruptedException;
     boolean disconnectServer();
     void assignWork(int i);
+    void robotFail(int i);
 }

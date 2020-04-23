@@ -17,6 +17,7 @@ char *robot1_link3_angle_angleValue_paths[4] = {"myFirstRobot", "link3", "angle"
 char *robot1_link4_angle_angleValue_paths[4] = {"myFirstRobot", "link4", "angle", "angleValue"};
 char *robot1_link5_angle_angleValue_paths[4] = {"myFirstRobot", "link5", "angle", "angleValue"};
 char *robot1_link6_angle_angleValue_paths[4] = {"myFirstRobot", "link6", "angle", "angleValue"};
+char *robot1_Status_paths[2] = {"myFirstRobot", "Status"};
 // robot2
 char *robot2_link1_angle_angleValue_paths[4] = {"mySecondRobot", "link1", "angle", "angleValue"};
 char *robot2_link2_angle_angleValue_paths[4] = {"mySecondRobot", "link2", "angle", "angleValue"};
@@ -24,6 +25,7 @@ char *robot2_link3_angle_angleValue_paths[4] = {"mySecondRobot", "link3", "angle
 char *robot2_link4_angle_angleValue_paths[4] = {"mySecondRobot", "link4", "angle", "angleValue"};
 char *robot2_link5_angle_angleValue_paths[4] = {"mySecondRobot", "link5", "angle", "angleValue"};
 char *robot2_link6_angle_angleValue_paths[4] = {"mySecondRobot", "link6", "angle", "angleValue"};
+char *robot2_Status_paths[2] = {"mySecondRobot", "Status"};
 // 关节值的NodeId
 // robot1
 UA_NodeId robot1_link1_angle_angleValue_Id;
@@ -32,6 +34,7 @@ UA_NodeId robot1_link3_angle_angleValue_Id;
 UA_NodeId robot1_link4_angle_angleValue_Id;
 UA_NodeId robot1_link5_angle_angleValue_Id;
 UA_NodeId robot1_link6_angle_angleValue_Id;
+UA_NodeId robot1_Status_Id;
 // robot2
 UA_NodeId robot2_link1_angle_angleValue_Id;
 UA_NodeId robot2_link2_angle_angleValue_Id;
@@ -39,6 +42,7 @@ UA_NodeId robot2_link3_angle_angleValue_Id;
 UA_NodeId robot2_link4_angle_angleValue_Id;
 UA_NodeId robot2_link5_angle_angleValue_Id;
 UA_NodeId robot2_link6_angle_angleValue_Id;
+UA_NodeId robot2_Status_Id;
 // Job Size
 int robot1_job_size = 0;
 int robot2_job_size = 0;
@@ -47,6 +51,10 @@ pthread_mutex_t robot2_mutex;
 pthread_mutex_t write_mutex;
 sem_t robot1_sem;
 sem_t robot2_sem;
+pthread_t robot1_consumer_thread;
+pthread_t robot2_consumer_thread;
+bool robot1_normal = true;
+bool robot2_normal = true;
 
 
 // 查询节点id的包装函数, 官方用法
@@ -64,6 +72,52 @@ static UA_StatusCode translateBrowsePathsToNodeIdsRequest(UA_Client *client, UA_
     browsePath.relativePath.elementsSize = BROWSE_PATHS_SIZE;
 
     for (size_t i = 0; i < BROWSE_PATHS_SIZE; ++i) {
+        UA_RelativePathElement *elem = &browsePath.relativePath.elements[i];
+        elem->referenceTypeId = UA_NODEID_NUMERIC(0, ids[i]);
+        elem->targetName = UA_QUALIFIEDNAME_ALLOC(nsNumOfQualifiedName[i], paths[i]);
+    }
+
+    UA_TranslateBrowsePathsToNodeIdsRequest request;
+    UA_TranslateBrowsePathsToNodeIdsRequest_init(&request);
+
+    request.browsePaths = &browsePath;
+    request.browsePathsSize = 1;
+    
+    
+    UA_TranslateBrowsePathsToNodeIdsResponse response = UA_Client_Service_translateBrowsePathsToNodeIds(client, request);
+    
+    if (response.responseHeader.serviceResult == UA_STATUSCODE_GOOD) {
+        if (response.resultsSize == 1 && response.results[0].targetsSize == 1) {
+            UA_NodeId_copy(&response.results[0].targets[0].targetId.nodeId, returnId); // this has problem
+            // printf("%u\n", (*returnId).identifier.numeric);
+        } else {
+            printf("%d\n", response.results[0].targetsSize);
+        }
+    } else {
+        printf("Error: %s\n", UA_StatusCode_name(response.responseHeader.serviceResult));
+        ret = response.responseHeader.serviceResult;
+    }
+
+    UA_BrowsePath_deleteMembers(&browsePath);
+    UA_TranslateBrowsePathsToNodeIdsResponse_deleteMembers(&response);
+
+    return ret;
+}
+
+static UA_StatusCode translateBrowsePathsToNodeIdsRequest2(UA_Client *client, UA_NodeId *returnId, char **paths) {
+    UA_StatusCode ret = UA_STATUSCODE_GOOD;
+    #define BROWSE_PATHS_SIZE2 2
+    //char *paths[BROWSE_PATHS_SIZE] = {"myFirstRobot", "link1", "angle", "angleValue"};
+    UA_UInt32 ids[BROWSE_PATHS_SIZE2] = {UA_NS0ID_ORGANIZES, UA_NS0ID_HASCOMPONENT};
+    int nsNumOfQualifiedName[BROWSE_PATHS_SIZE2] = {1, 2};
+
+    UA_BrowsePath browsePath;
+    UA_BrowsePath_init(&browsePath);
+    browsePath.startingNode = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+    browsePath.relativePath.elements = (UA_RelativePathElement*)UA_Array_new(BROWSE_PATHS_SIZE2, &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT]);
+    browsePath.relativePath.elementsSize = BROWSE_PATHS_SIZE2;
+
+    for (size_t i = 0; i < BROWSE_PATHS_SIZE2; ++i) {
         UA_RelativePathElement *elem = &browsePath.relativePath.elements[i];
         elem->referenceTypeId = UA_NODEID_NUMERIC(0, ids[i]);
         elem->targetName = UA_QUALIFIEDNAME_ALLOC(nsNumOfQualifiedName[i], paths[i]);
@@ -133,6 +187,17 @@ static UA_StatusCode writeServerValueDouble(UA_Client *client, const UA_NodeId i
     if (retval == UA_STATUSCODE_GOOD) {
 
     }
+    return retval;
+}
+
+static UA_StatusCode writeServerValueStatusCode(UA_Client *client, const UA_NodeId id, UA_StatusCode value) {
+    UA_UInt32 reqId = 0;
+    UA_StatusCode retval;
+    UA_StatusCode status = value;
+    UA_Variant newValue;
+    UA_Variant_init(&newValue);
+    UA_Variant_setScalar(&newValue, &status, &UA_TYPES[UA_TYPES_STATUSCODE]);
+    retval = UA_Client_writeValueAttribute_async(client, id, &newValue, NULL, NULL, &reqId);
     return retval;
 }
 
@@ -214,6 +279,7 @@ void assignWorkToRobot2(UA_Client *client) {
             }
             pthread_mutex_unlock(&write_mutex);
         }
+        pthread_testcancel();
     }
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Second Robot END!");
 }
@@ -225,7 +291,7 @@ void *robot1_consumer(void *arg) {
     while (1) {
         sem_wait(&robot1_sem);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1开始执行任务");
-        assignWorkToRobot1(client);
+        if (robot1_normal) assignWorkToRobot1(client);
         pthread_mutex_lock(&robot1_mutex);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1结束执行任务, 任务数为%d", --robot1_job_size);
         pthread_mutex_unlock(&robot1_mutex);
@@ -239,7 +305,7 @@ void *robot2_consumer(void *arg) {
     while (1) {
         sem_wait(&robot2_sem);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2开始执行任务");
-        assignWorkToRobot2(client);
+        if (robot2_normal) assignWorkToRobot2(client);
         pthread_mutex_lock(&robot2_mutex);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2结束执行任务, 任务数为%d", --robot2_job_size);
         pthread_mutex_unlock(&robot2_mutex);
@@ -254,7 +320,7 @@ void stopHandler(int sign) {
 
 
 #ifdef UA_ENABLE_SUBSCRIPTIONS
-const size_t nSelectClauses = 2;
+const size_t nSelectClauses = 3;
 pthread_t a_thread[2]; // robot num thread
 
 
@@ -265,7 +331,7 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
     int robotNo = -1;
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered received by Robot Client");
     UA_assert(*(UA_UInt32*)monContext == monId);
-    for(size_t i = 0; i < nEventFields; ++i) {
+    for(size_t i = 0; i < nSelectClauses; ++i) {
         if(UA_Variant_hasScalarType(&eventFields[i], &UA_TYPES[UA_TYPES_UINT16])) {
             UA_UInt16 severity = *(UA_UInt16 *)eventFields[i].data;
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Severity: %u", severity);
@@ -276,25 +342,66 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
             robotNo = atoi(lt->text.data);
         }
         else {
-            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                        "Don't know how to handle type: '%s'", eventFields[i].type->typeName);
+            // 处理机器人发生故障，转移任务
+            UA_String RobotFailureEventType = UA_STRING("RobotFailureEventType");
+            UA_String RobotJobEventType = UA_STRING("RobotJobEventType");
+            UA_NodeId type = *(UA_NodeId *)eventFields[i].data;
+            UA_LocalizedText typeName; 
+            UA_LocalizedText_init(&typeName);
+            UA_Client_readDisplayNameAttribute(client, type, &typeName);
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event Type: %s", typeName.text.data);
+            if (UA_String_equal(&typeName.text, &RobotFailureEventType)) {
+                if (robotNo == 1) {
+                    writeServerValueStatusCode(client, robot1_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
+                    pthread_cancel(robot1_consumer_thread);
+                    pthread_mutex_lock(&robot1_mutex);
+                    if (robot2_normal) {
+                        robot2_job_size += robot1_job_size;
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1发生故障，将%d个任务转移给Robot2，Robot 2任务数为%d", robot1_job_size, robot2_job_size);
+                        for (int j = 0; j < robot1_job_size; j++) {
+                            sem_post(&robot2_sem);
+                        }
+                        robot1_job_size = 0;
+                        robot1_normal = false;
+                    }
+                    pthread_mutex_unlock(&robot1_mutex);
+                    
+                } else if (robotNo == 2) {
+                    writeServerValueStatusCode(client, robot2_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
+                    pthread_cancel(robot2_consumer_thread);
+                    pthread_mutex_lock(&robot1_mutex);
+                    if (robot1_normal) {                        
+                        robot1_job_size += robot2_job_size;
+                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2发生故障，将%d个任务转移给Robot1，Robot 1任务数为%d", robot2_job_size, robot1_job_size);
+                        for (int j = 0; j < robot2_job_size; j++) {
+                            sem_post(&robot1_sem);
+                        }
+                        robot2_job_size = 0;
+                        robot2_normal = false;
+                    }
+                    pthread_mutex_unlock(&robot1_mutex);
+                    
+                }
+            } else if (UA_String_equal(&typeName.text, &RobotJobEventType)) {
+                if (robotNo == 1) {
+                    pthread_mutex_lock(&robot1_mutex);
+                    robot1_job_size++;
+                    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1增加任务，任务数为%d", robot1_job_size);
+                    pthread_mutex_unlock(&robot1_mutex);
+                    sem_post(&robot1_sem);
+                } else if (robotNo == 2) {
+                    pthread_mutex_lock(&robot2_mutex);
+                    robot2_job_size++;
+                    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2增加任务，任务数为%d", robot2_job_size);
+                    pthread_mutex_unlock(&robot2_mutex);
+                    sem_post(&robot2_sem);
+                }
+            }
         }
     }
 
-    if (robotNo == 1) {
-        pthread_mutex_lock(&robot1_mutex);
-        robot1_job_size++;
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1增加任务，任务数为%d", robot1_job_size);
-        pthread_mutex_unlock(&robot1_mutex);
-        sem_post(&robot1_sem);
-    } else if (robotNo == 2) {
-        pthread_mutex_lock(&robot2_mutex);
-        robot2_job_size++;
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2增加任务，任务数为%d", robot2_job_size);
-        pthread_mutex_unlock(&robot2_mutex);
-        sem_post(&robot2_sem);
-        // assignWorkToRobot2(client);
-    }
+
+    
 }
 
 /*
@@ -340,6 +447,17 @@ static UA_SimpleAttributeOperand *setupSelectClauses(void)
     selectClauses[1].attributeId = UA_ATTRIBUTEID_VALUE;
     selectClauses[1].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "Severity");
 
+    selectClauses[2].typeDefinitionId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
+    selectClauses[2].browsePathSize = 1;
+    selectClauses[2].browsePath = (UA_QualifiedName*)
+        UA_Array_new(selectClauses[2].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]);
+    if(!selectClauses[2].browsePath) {
+        UA_SimpleAttributeOperand_delete(selectClauses);
+        return NULL;
+    }
+    selectClauses[2].attributeId = UA_ATTRIBUTEID_VALUE;
+    selectClauses[2].browsePath[0] = UA_QUALIFIEDNAME_ALLOC(0, "EventType");
+
     return selectClauses;
 }
 #endif
@@ -363,8 +481,7 @@ int main(void) {
     pthread_mutex_init(&write_mutex, NULL);
     sem_init(&robot1_sem, 0, 0);
     sem_init(&robot2_sem, 0, 0);
-    pthread_t robot1_consumer_thread;
-    pthread_t robot2_consumer_thread;
+    
     pthread_create(&robot1_consumer_thread, NULL, robot1_consumer, (void*)client);
     pthread_create(&robot2_consumer_thread, NULL, robot2_consumer, (void*)client);
 /*
@@ -430,6 +547,7 @@ int main(void) {
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link4_angle_angleValue_Id, robot1_link4_angle_angleValue_paths);
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link5_angle_angleValue_Id, robot1_link5_angle_angleValue_paths);
     translateBrowsePathsToNodeIdsRequest(client, &robot1_link6_angle_angleValue_Id, robot1_link6_angle_angleValue_paths);
+    translateBrowsePathsToNodeIdsRequest2(client, &robot1_Status_Id, robot1_Status_paths);
     
     // 填充ROBOT 2的地址
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link1_angle_angleValue_Id, robot2_link1_angle_angleValue_paths);
@@ -438,7 +556,9 @@ int main(void) {
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link4_angle_angleValue_Id, robot2_link4_angle_angleValue_paths);
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link5_angle_angleValue_Id, robot2_link5_angle_angleValue_paths);
     translateBrowsePathsToNodeIdsRequest(client, &robot2_link6_angle_angleValue_Id, robot2_link6_angle_angleValue_paths);
-
+    translateBrowsePathsToNodeIdsRequest2(client, &robot2_Status_Id, robot2_Status_paths);
+    writeServerValueStatusCode(client, robot1_Status_Id, UA_STATUSCODE_GOOD);
+    writeServerValueStatusCode(client, robot2_Status_Id, UA_STATUSCODE_GOOD);
    
     while (running) {
         retval = UA_Client_run_iterate(client, 100);

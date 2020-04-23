@@ -18,6 +18,7 @@ static void stopHandler(int sign) {
 
 // event的node
 static UA_NodeId RobotJobEventTypeId;
+static UA_NodeId RobotFailureEventTypeId;
 
 // 读取现在的时间
 static UA_StatusCode readCurrentTime(UA_Server *server,
@@ -164,34 +165,48 @@ static void updateCurrentlink6_z_Value(UA_Server *server, UA_NodeId nodeId) {
 static void updateCurrentStart_Value(UA_Server *server, UA_NodeId nodeId) {
 }
 static void updateCurrentStatus_Value(UA_Server *server, UA_NodeId nodeId) {
-    UA_StatusCode status = UA_STATUSCODE_GOOD;
-    UA_Variant value;
-    UA_Variant_setScalar(&value, &status, &UA_TYPES[UA_TYPES_STATUSCODE]);
-    UA_Server_writeValue(server, nodeId, value);
 }
 
 // 读回调函数 写回调函数 以及绑定函数的自动生成 code
 
 
-static void beforeReadStatus_Value(UA_Server *server,
+static void beforeRead_robot1_Status_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Status_Value is to be updated.");
-    updateCurrentStatus_Value(server, *nodeid);
 }
 
-static void afterWriteStatus_Value(UA_Server *server,
+static void afterWrite_robot1_Status_Value(UA_Server *server,
         const UA_NodeId *sessionId, void *sessionContext,
         const UA_NodeId *nodeid, void *nodeContext,
         const UA_NumericRange *range, const UA_DataValue *data) { 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Status_Value is modified.");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_Status_Value is modified.");
 }
 
-static void addStatus_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+static void add_robot1_Status_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
     UA_ValueCallback callback;
-    callback.onRead = beforeReadStatus_Value;
-    callback.onWrite = afterWriteStatus_Value;
+    callback.onRead = beforeRead_robot1_Status_Value;
+    callback.onWrite = afterWrite_robot1_Status_Value;
+    UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
+}
+
+static void beforeRead_robot2_Status_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+}
+
+static void afterWrite_robot2_Status_Value(UA_Server *server,
+        const UA_NodeId *sessionId, void *sessionContext,
+        const UA_NodeId *nodeid, void *nodeContext,
+        const UA_NumericRange *range, const UA_DataValue *data) { 
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "robot1_Status_Value is modified.");
+}
+
+static void add_robot2_Status_CallbackToRobot(UA_Server *server, UA_NodeId currentNodeId) {
+    UA_ValueCallback callback;
+    callback.onRead = beforeRead_robot2_Status_Value;
+    callback.onWrite = afterWrite_robot2_Status_Value;
     UA_Server_setVariableNode_valueCallback(server, currentNodeId, callback);
 }
 
@@ -498,6 +513,96 @@ static void addGetNodeIdMethod(UA_Server *server) {
 }
 
 
+static UA_StatusCode addRobotFailureEventType(UA_Server *server) {
+    UA_ObjectTypeAttributes attr = UA_ObjectTypeAttributes_default;
+    attr.displayName = UA_LOCALIZEDTEXT("en-US", "RobotFailureEventType");
+    attr.description = UA_LOCALIZEDTEXT("en-US", "An event which shows a failure of a robot");
+    return UA_Server_addObjectTypeNode(server, UA_NODEID_NULL,
+                                        UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE),
+                                        UA_NODEID_NUMERIC(0, UA_NS0ID_HASSUBTYPE),
+                                        UA_QUALIFIEDNAME(0, "RobotFailureEventType"),
+                                        attr, NULL, &RobotFailureEventTypeId);
+}
+
+
+static UA_StatusCode setUpRobotFailureEvent(UA_Server *server, UA_NodeId *outId, UA_LocalizedText *eventMessage) {
+    UA_StatusCode retval = UA_Server_createEvent(server, RobotFailureEventTypeId, outId);
+    if (retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
+                       "createEvent failed. StatusCode %s", UA_StatusCode_name(retval));
+        return retval;
+    }
+    UA_DateTime eventTime = UA_DateTime_now();
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Time"),
+                                         &eventTime, &UA_TYPES[UA_TYPES_DATETIME]);
+
+    UA_UInt16 eventSeverity = 200;
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Severity"),
+                                         &eventSeverity, &UA_TYPES[UA_TYPES_UINT16]);
+
+    // UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", "An event has been generated.");
+    UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Message"),
+                                         eventMessage, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+
+    return UA_STATUSCODE_GOOD;
+}
+
+static UA_StatusCode generateRobotFailureEventMethodCallback(UA_Server *server,
+                         const UA_NodeId *sessionId, void *sessionHandle,
+                         const UA_NodeId *methodId, void *methodContext,
+                         const UA_NodeId *objectId, void *objectContext,
+                         size_t inputSize, const UA_Variant *input,
+                         size_t outputSize, UA_Variant *output)
+{
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "RobotFailureEvent triggered");
+
+    UA_Int16 *robotNo = (UA_Int16*) input->data;
+    char robotNoC[2];
+    sprintf(robotNoC, "%d", (*robotNo));
+    UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", robotNoC);
+    /* set up event */
+    UA_NodeId eventNodeId;
+    UA_StatusCode retval = setUpRobotFailureEvent(server, &eventNodeId, &eventMessage);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                       "Creating event failed. StatusCode %s", UA_StatusCode_name(retval));
+        return retval;
+    }
+
+    retval = UA_Server_triggerEvent(server, eventNodeId,
+                                    UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
+                                    NULL, UA_TRUE);
+    if(retval != UA_STATUSCODE_GOOD)
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+                       "Triggering event failed. StatusCode %s", UA_StatusCode_name(retval));
+
+    return retval;
+}
+
+
+static void addGenerateRobotFailureEventMethod(UA_Server *server) 
+{
+    UA_Argument inputArgument;
+    UA_Argument_init(&inputArgument);
+    inputArgument.description = UA_LOCALIZEDTEXT("en-US", "Robot No");
+    inputArgument.name = UA_STRING("MyInput");
+    inputArgument.dataType = UA_TYPES[UA_TYPES_INT16].typeId;
+    inputArgument.valueRank = UA_VALUERANK_SCALAR;
+
+    UA_MethodAttributes generateAttr = UA_MethodAttributes_default;
+    generateAttr.description = UA_LOCALIZEDTEXT("en-US","Generate a failure of a robot");
+    generateAttr.displayName = UA_LOCALIZEDTEXT("en-US","Generate RobotFailure Event");
+    generateAttr.executable = true;
+    generateAttr.userExecutable = true;
+    UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(1, 62543),
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_HASORDEREDCOMPONENT),
+                            UA_QUALIFIEDNAME(1, "Generate RobotFailureEvent"),
+                            generateAttr, &generateRobotFailureEventMethodCallback,
+                            1, &inputArgument, 0, NULL, NULL, NULL);
+}
+
+
 static UA_StatusCode addRobotJobEventType(UA_Server *server) {
     UA_ObjectTypeAttributes attr = UA_ObjectTypeAttributes_default;
     attr.displayName = UA_LOCALIZEDTEXT("en-US", "RobotJobEventType");
@@ -529,9 +634,11 @@ static UA_StatusCode setUpRobotJobEvent(UA_Server *server, UA_NodeId *outId, UA_
     UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "Message"),
                                          eventMessage, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 
-    UA_String eventSourceName = UA_STRING("Monitor Client");
+    UA_String eventSourceName = UA_STRING("RobotJob");
     UA_Server_writeObjectProperty_scalar(server, *outId, UA_QUALIFIEDNAME(0, "SourceName"),
                                          &eventSourceName, &UA_TYPES[UA_TYPES_STRING]);
+
+
     return UA_STATUSCODE_GOOD;
 }
 
@@ -544,7 +651,7 @@ static UA_StatusCode generateRobotJobEventMethodCallback(UA_Server *server,
                          size_t outputSize, UA_Variant *output) 
 {
 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered");
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "RobotJobEvent triggered");
 
     UA_Int16 *robotNo = (UA_Int16*) input->data;
     char robotNoC[2];
@@ -581,7 +688,7 @@ static void addGenerateRobotJobEventMethod(UA_Server *server)
 
     UA_MethodAttributes generateAttr = UA_MethodAttributes_default;
     generateAttr.description = UA_LOCALIZEDTEXT("en-US","Generate an Robot Job event.");
-    generateAttr.displayName = UA_LOCALIZEDTEXT("en-US","Generate Event");
+    generateAttr.displayName = UA_LOCALIZEDTEXT("en-US","Generate RobotJob Event");
     generateAttr.executable = true;
     generateAttr.userExecutable = true;
     UA_Server_addMethodNode(server, UA_NODEID_NUMERIC(1, 62542),
@@ -667,10 +774,11 @@ int main(void) {
         */
 
         // 事件
-        UA_NodeId RobotJobEventTypeId;
-        UA_NodeId RobotJobEventId;
         addRobotJobEventType(server);
         addGenerateRobotJobEventMethod(server);
+
+        addRobotFailureEventType(server);
+        addGenerateRobotFailureEventMethod(server);
         
 
         int ret;
@@ -745,15 +853,21 @@ int main(void) {
         // ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, Start_nameArr, &Start_id);
         // hashmap_set(hashmap, "Start_", &Start_id, NULL);
 
-        UA_QualifiedName Status_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "Status")};
-        UA_NodeId Status_id;
-        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, Status_nameArr, &Status_id);
-        hashmap_set(hashmap, "Status_", &Status_id, NULL);
+        UA_QualifiedName robot1_Status_nameArr[2] = {UA_QUALIFIEDNAME(1, "myFirstRobot"), UA_QUALIFIEDNAME(2, "Status")};
+        UA_NodeId robot1_Status_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, robot1_Status_nameArr, &robot1_Status_id);
+        hashmap_set(hashmap, "robot1_Status_", &robot1_Status_id, NULL);
+
+        UA_QualifiedName robot2_Status_nameArr[2] = {UA_QUALIFIEDNAME(1, "mySecondRobot"), UA_QUALIFIEDNAME(2, "Status")};
+        UA_NodeId robot2_Status_id;
+        ret = findNodeID(server, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER), 2, robot2_Status_nameArr, &robot2_Status_id);
+        hashmap_set(hashmap, "robot2_Status_", &robot2_Status_id, NULL);
         
 
 
         // 将回调函数绑定到server
-        addStatus_CallbackToRobot(server, Status_id);
+        add_robot1_Status_CallbackToRobot(server, robot1_Status_id);
+        add_robot2_Status_CallbackToRobot(server, robot2_Status_id);
 
 
         add_robot1_link1_angle_angleValue_CallbackToRobot(server, robot1_link1_angle_angleValue_id);
