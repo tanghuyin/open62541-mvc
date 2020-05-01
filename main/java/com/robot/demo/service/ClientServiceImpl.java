@@ -1,7 +1,11 @@
 package com.robot.demo.service;
 
 import com.robot.demo.dao.RobotAngleDataDao;
+import com.robot.demo.dao.RobotJobNumDao;
+import com.robot.demo.dao.RobotStatusDao;
 import com.robot.demo.domain.RobotAngleData;
+import com.robot.demo.domain.RobotJobNumData;
+import com.robot.demo.domain.RobotStatusData;
 import com.robot.demo.utils.KeyStoreLoader;
 import com.robot.demo.utils.UaUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -43,8 +47,16 @@ public class ClientServiceImpl implements ClientService {
     private static final Logger logger = LoggerFactory.getLogger(ClientServiceImpl.class);
     private OpcUaClient client;
     private Map<Object, Integer> nodeIdToLink = new HashMap<>();
+    private Map<Object, Integer> nodeIdToStatus = new HashMap<>();
+    private Map<Object, Integer> nodeIdToJobNum = new HashMap<>();
     @Autowired
     RobotAngleDataDao robotAngleDataDao;
+
+    @Autowired
+    RobotStatusDao robotStatusDao;
+
+    @Autowired
+    RobotJobNumDao robotJobNumDao;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -128,12 +140,20 @@ public class ClientServiceImpl implements ClientService {
         };
         List<NodeId> nodeIdInAngleSubscription2 = translateBrowsePathToNodeId(client, paths2);
 
-        String[][] path3 = {
-                {}
+        String[][] paths3 = {
+                {"myFirstRobot", "Status"},
+                {"mySecondRobot", "Status"},
         };
+        List<NodeId> nodeIdStatusSubscription = translateBrowsePathToNodeId2(client, paths3);
+
+        List<NodeId> nodeIdRobotJobNumSubscription = new ArrayList<>();
+        nodeIdRobotJobNumSubscription.add(new NodeId(1, "robot1.job.num"));
+        nodeIdRobotJobNumSubscription.add(new NodeId(1, "robot2.job.num"));
         // 关节值节点的订阅
         UaSubscription angleSubscription = client.getSubscriptionManager().createSubscription(50.0).get();
         UaSubscription angleSubscription2 = client.getSubscriptionManager().createSubscription(50.0).get();
+        UaSubscription statusSubscription = client.getSubscriptionManager().createSubscription(500.0).get();
+        UaSubscription jobNumSubscription = client.getSubscriptionManager().createSubscription(50.0).get();
         
         // IMPORTANT: client handle must be unique per item within the context of a subscription.
         // ROBOT1
@@ -168,6 +188,37 @@ public class ClientServiceImpl implements ClientService {
 
         List<MonitoredItemCreateRequest> requests2 =
                 createMonitoredItemCreateRequest(nodeIdInAngleSubscription2, parametersQueue2);
+        // ROBOT2 END
+
+        // STATUS
+        Queue<MonitoringParameters> parametersQueue3 = createParametersList(
+                statusSubscription,
+                2,
+                500.0,
+                null,
+                5,
+                true
+        );
+        BiConsumer<UaMonitoredItem, Integer> onItemCreated3 =
+                (item, id) -> item.setValueConsumer(this::onSubscriptionValue3);
+        List<MonitoredItemCreateRequest> request3 =
+                createMonitoredItemCreateRequest(nodeIdStatusSubscription, parametersQueue3);
+        // STATUS END
+
+        // JOB_NUM
+        Queue<MonitoringParameters> parametersQueue4 = createParametersList(
+                jobNumSubscription,
+                2,
+                50.0,
+                null,
+                5,
+                true
+        );
+        BiConsumer<UaMonitoredItem, Integer> onItemCreated4 =
+                (item, id) -> item.setValueConsumer(this::onSubscriptionValue4);
+        List<MonitoredItemCreateRequest> request4 =
+                createMonitoredItemCreateRequest(nodeIdRobotJobNumSubscription, parametersQueue4);
+        // JOB_NUM END
 
         // 异步，利用semaphore申请create，向client申请create
         // .thenAccept 可以直接先执行后面的语句。一旦结果可用再回来执行，或者可以用.get()这样就会阻塞
@@ -207,6 +258,43 @@ public class ClientServiceImpl implements ClientService {
                 isSuccess = false;
             }
         }
+
+        List<UaMonitoredItem> uaMonitoredItems3 = statusSubscription.createMonitoredItems(
+                TimestampsToReturn.Both,
+                request3,
+                onItemCreated3
+        ).get();
+
+        for (UaMonitoredItem item : uaMonitoredItems3) {
+            if (item.getStatusCode().isGood()) {
+                logger.info("item created for nodeId={}", item.getReadValueId().getNodeId());
+                nodeIdToStatus.put(item.getReadValueId().getNodeId().getIdentifier(), nodeIdToStatus.size()+1);
+            } else {
+                logger.warn(
+                        "failed to create item for nodeId={} (status={})",
+                        item.getReadValueId().getNodeId(), item.getStatusCode());
+                isSuccess = false;
+            }
+        }
+
+        List<UaMonitoredItem> uaMonitoredItems4 = jobNumSubscription.createMonitoredItems(
+                TimestampsToReturn.Both,
+                request4,
+                onItemCreated4
+        ).get();
+
+        for (UaMonitoredItem item : uaMonitoredItems4) {
+            if (item.getStatusCode().isGood()) {
+                logger.info("item created for nodeId={}", item.getReadValueId().getNodeId());
+                nodeIdToJobNum.put(item.getReadValueId().getNodeId().getIdentifier(), nodeIdToJobNum.size()+1);
+            } else {
+                logger.warn(
+                        "failed to create item for nodeId={} (status={})",
+                        item.getReadValueId().getNodeId(), item.getStatusCode());
+                isSuccess = false;
+            }
+        }
+
 
         return isSuccess;
     }
@@ -278,6 +366,29 @@ public class ClientServiceImpl implements ClientService {
         }
     }
 
+    // STATUS
+    private void onSubscriptionValue3(UaMonitoredItem item, DataValue value) {
+        if (value.getValue().getValue() != null) {
+            StatusCode statusCode = (StatusCode) value.getValue().getValue();
+            if (statusCode.isGood()) {
+                logger.info("robot{}:, status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), true);
+                robotStatusDao.put(new RobotStatusData(nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), true));
+            } else {
+                logger.info("robot{}:, status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), false);
+                robotStatusDao.put(new RobotStatusData(nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), false));
+            }
+        }
+
+    }
+
+    private void onSubscriptionValue4(UaMonitoredItem item, DataValue value) {
+        if (value.getValue().getValue() != null) {
+            int num = (int) value.getValue().getValue();
+            logger.info("robot{}: , jobnum={}", nodeIdToJobNum.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), num);
+            robotJobNumDao.put(new RobotJobNumData(nodeIdToJobNum.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), num));
+        }
+    }
+
 
     /*
     因为一个subscription中的每一个item都需要一个不同的clienthandle，不然nodeid会相同
@@ -318,6 +429,15 @@ public class ClientServiceImpl implements ClientService {
         for (int i = 0; i < names.length; i++) {
             // nodeIds.add(executeGetNodeIdMethod(client, names[i], getNodeIdMethodId).get());
             nodeIds.add(translateBrowsePathToNodeId(client, names[i]));
+        }
+        return nodeIds;
+    }
+
+    private List<NodeId> translateBrowsePathToNodeId2(OpcUaClient client, String[][] names) throws ExecutionException, InterruptedException {
+        List<NodeId> nodeIds = new ArrayList<>();
+        for (int i = 0; i < names.length; i++) {
+            // nodeIds.add(executeGetNodeIdMethod(client, names[i], getNodeIdMethodId).get());
+            nodeIds.add(translateBrowsePathToNodeId2(client, names[i]));
         }
         return nodeIds;
     }
@@ -381,6 +501,32 @@ public class ClientServiceImpl implements ClientService {
                                 true,
                                 new QualifiedName(2, names[3])
                         )
+                })
+        ))).get();
+
+        BrowsePathResult result = l(response.getResults()).get(0);
+        StatusCode statusCode = result.getStatusCode();
+        logger.info("Node={}, Status={}", names, statusCode.isGood());
+        ExpandedNodeId expandedNodeId = l(result.getTargets()).get(0).getTargetId();
+        return new NodeId(expandedNodeId.getNamespaceIndex(), (UInteger) expandedNodeId.getIdentifier());
+    }
+
+    private NodeId translateBrowsePathToNodeId2(OpcUaClient client, String[] names) throws ExecutionException, InterruptedException {
+        TranslateBrowsePathsToNodeIdsResponse response = client.translateBrowsePaths(newArrayList(new BrowsePath(
+                Identifiers.ObjectsFolder,
+                new RelativePath(new RelativePathElement[]{
+                        new RelativePathElement(
+                                Identifiers.HierarchicalReferences,
+                                false,
+                                true,
+                                new QualifiedName(1, names[0])
+                        ),
+                        new RelativePathElement(
+                                Identifiers.HierarchicalReferences,
+                                false,
+                                true,
+                                new QualifiedName(2, names[1])
+                        ),
                 })
         ))).get();
 

@@ -50,6 +50,8 @@ public class ClientControllerImpl implements ClientController {
         }
         // 2. 更新数据线程启动以更新数据，通过ws发送到前端
         updateService.updateAngleStart();
+        updateService.updateStatusStart();
+        updateService.updateJobNumStart();
         return "success";
     }
 

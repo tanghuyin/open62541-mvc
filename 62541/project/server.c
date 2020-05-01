@@ -699,7 +699,39 @@ static void addGenerateRobotJobEventMethod(UA_Server *server)
                             1, &inputArgument, 0, NULL, NULL, NULL);
 }
 
+static void add_robot1_job_num(UA_Server *server) {
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    UA_Int32 init_job_num = 0;
+    UA_Variant_setScalar(&attr.value, &init_job_num, &UA_TYPES[UA_TYPES_INT32]);
+    attr.description = UA_LOCALIZEDTEXT("en-US", "robot1_job_num");
+    attr.displayName = UA_LOCALIZEDTEXT("en-US", "robot1_job_num");
+    attr.dataType = UA_TYPES[UA_TYPES_INT32].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
+    UA_NodeId robot1_job_num_id = UA_NODEID_STRING(1, "robot1.job.num");
+    UA_QualifiedName robot1_job_num_name = UA_QUALIFIEDNAME(1, "robot1 job num");
+    UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+    UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+    UA_Server_addVariableNode(server, robot1_job_num_id, parentNodeId, parentReferenceNodeId, robot1_job_num_name,
+                                UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE), attr, NULL, NULL);
+}
+
+static void add_robot2_job_num(UA_Server *server) {
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    UA_Int32 init_job_num = 0;
+    UA_Variant_setScalar(&attr.value, &init_job_num, &UA_TYPES[UA_TYPES_INT32]);
+    attr.description = UA_LOCALIZEDTEXT("en-US", "robot2_job_num");
+    attr.displayName = UA_LOCALIZEDTEXT("en-US", "robot2_job_num");
+    attr.dataType = UA_TYPES[UA_TYPES_INT32].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_NodeId robot2_job_num_id = UA_NODEID_STRING(1, "robot2.job.num");
+    UA_QualifiedName robot2_job_num_name = UA_QUALIFIEDNAME(1, "robot2 job num");
+    UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+    UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+    UA_Server_addVariableNode(server, robot2_job_num_id, parentNodeId, parentReferenceNodeId, robot2_job_num_name,
+                                UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE), attr, NULL, NULL);
+}
 
 int main(void) {
     signal(SIGINT, stopHandler);
@@ -719,6 +751,7 @@ int main(void) {
         addCurrentTimeDataSourceVariable(server); 
 
         hashmap = hashmap_new(16, hash, compare); // 存储名称和nodeid对的hashmap
+        
 
         // 第一个机器人
         UA_NodeId RobotId;
@@ -733,7 +766,7 @@ int main(void) {
                                 UA_QUALIFIEDNAME(1, "myFirstRobot"),
                                 UA_NODEID_NUMERIC(2, 1003),
                                 object_attr, NULL, &RobotId);
-
+        add_robot1_job_num(server);
         // 第二个机器人
 
         UA_NodeId Robot2Id;
@@ -746,7 +779,7 @@ int main(void) {
                                 UA_QUALIFIEDNAME(1, "mySecondRobot"),
                                 UA_NODEID_NUMERIC(2, 1003),
                                 object_attr2, NULL, &Robot2Id);
-
+        add_robot2_job_num(server);
         // TODO: 获得机器人对象的根节点以及机器人定义的模型，可以将所有节点以及其NodeId以map的方式返回
         /*
         MODEL
