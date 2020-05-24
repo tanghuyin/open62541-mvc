@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public interface ClientController {
     String connect() throws Exception;
     String createSubscription() throws Exception;
-    String assignWorkToClient(int robotId) throws Exception;
+    String assignWorkToClient(int robotId, int jobNum) throws Exception;
     String robotFail(int robotId) throws Exception;
     boolean disconnect();
 }

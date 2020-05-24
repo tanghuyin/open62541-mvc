@@ -614,7 +614,7 @@ static UA_StatusCode addRobotJobEventType(UA_Server *server) {
                                         attr, NULL, &RobotJobEventTypeId);
 }
 
-static UA_StatusCode setUpRobotJobEvent(UA_Server *server, UA_NodeId *outId, UA_LocalizedText *eventMessage) {
+static UA_StatusCode setUpRobotJobEvent(UA_Server *server, UA_NodeId *outId, UA_LocalizedText *eventMessage, UA_Int16 *JobNum) {
     UA_StatusCode retval = UA_Server_createEvent(server, RobotJobEventTypeId, outId);
     if (retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_SERVER,
@@ -650,16 +650,17 @@ static UA_StatusCode generateRobotJobEventMethodCallback(UA_Server *server,
                          size_t inputSize, const UA_Variant *input,
                          size_t outputSize, UA_Variant *output) 
 {
+    UA_Int16 *robotNo = (UA_Int16*) input[0].data;
+    UA_Int16 *JobNum = (UA_Int16*) input[1].data;
+    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "RobotJobEvent triggered. Robot %d, JobNum %d", *robotNo, *JobNum);
 
-    UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "RobotJobEvent triggered");
+    char info[4];
+    sprintf(info, "%d%d", (*JobNum), (*robotNo));
 
-    UA_Int16 *robotNo = (UA_Int16*) input->data;
-    char robotNoC[2];
-    sprintf(robotNoC, "%d", (*robotNo));
-    UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", robotNoC);
+    UA_LocalizedText eventMessage = UA_LOCALIZEDTEXT("en-US", info);
     /* set up event */
     UA_NodeId eventNodeId;
-    UA_StatusCode retval = setUpRobotJobEvent(server, &eventNodeId, &eventMessage);
+    UA_StatusCode retval = setUpRobotJobEvent(server, &eventNodeId, &eventMessage, JobNum);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                        "Creating event failed. StatusCode %s", UA_StatusCode_name(retval));
@@ -679,12 +680,18 @@ static UA_StatusCode generateRobotJobEventMethodCallback(UA_Server *server,
 
 static void addGenerateRobotJobEventMethod(UA_Server *server) 
 {
-    UA_Argument inputArgument;
-    UA_Argument_init(&inputArgument);
-    inputArgument.description = UA_LOCALIZEDTEXT("en-US", "Robot No");
-    inputArgument.name = UA_STRING("MyInput");
-    inputArgument.dataType = UA_TYPES[UA_TYPES_INT16].typeId;
-    inputArgument.valueRank = UA_VALUERANK_SCALAR;
+    UA_Argument inputArgument[2];
+    UA_Argument_init(&inputArgument[0]);
+    inputArgument[0].description = UA_LOCALIZEDTEXT("en-US", "Robot No");
+    inputArgument[0].name = UA_STRING("Robot No");
+    inputArgument[0].dataType = UA_TYPES[UA_TYPES_INT16].typeId;
+    inputArgument[0].valueRank = UA_VALUERANK_SCALAR;
+
+    UA_Argument_init(&inputArgument[1]);
+    inputArgument[1].description = UA_LOCALIZEDTEXT("en-US", "Job Num");
+    inputArgument[1].name = UA_STRING("Job Num");
+    inputArgument[1].dataType = UA_TYPES[UA_TYPES_INT16].typeId;
+    inputArgument[1].valueRank = UA_VALUERANK_SCALAR;
 
     UA_MethodAttributes generateAttr = UA_MethodAttributes_default;
     generateAttr.description = UA_LOCALIZEDTEXT("en-US","Generate an Robot Job event.");
@@ -696,7 +703,7 @@ static void addGenerateRobotJobEventMethod(UA_Server *server)
                             UA_NODEID_NUMERIC(0, UA_NS0ID_HASORDEREDCOMPONENT),
                             UA_QUALIFIEDNAME(1, "Generate RobotJobEvent"),
                             generateAttr, &generateRobotJobEventMethodCallback,
-                            1, &inputArgument, 0, NULL, NULL, NULL);
+                            2, inputArgument, 0, NULL, NULL, NULL);
 }
 
 static void add_robot1_job_num(UA_Server *server) {

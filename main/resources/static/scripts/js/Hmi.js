@@ -2,7 +2,7 @@ define((require, exports, module) => {
     const Robot = require('Robot')
     const RobotTHREE = require('RobotThree')
     const storeManager = require('State')
-    const gui = require('UiDat')
+    //const gui = require('UiDat')
     const THREEView = require('THREEView')
     const buttonHandler = require('buttonHandler')
     const ws = require('websocket')
@@ -97,26 +97,26 @@ define((require, exports, module) => {
             this.renderer = renderer
             this.camera = camera
 
-            const hmiGui = gui.addFolder('HMI')
-            gui.remember(scope.state)
-            const fun = {
-                resetTargetAngles: () => {
-                    Robot.dispatch('ROBOT_CHANGE_ANGLES', {
-                        A0: 0,
-                        A1: 0,
-                        A2: 0,
-                        A3: 0,
-                        A4: 0,
-                        A5: 0,
-                    })
-                },
-            }
-            hmiGui.add(fun, 'resetTargetAngles').onChange(() => {
-                console.log("reset TargetAngles")
-            })
-            window.debug.show = false
-            hmiGui.add(window.debug, 'show')
-            console.log("启动Hmi")
+            // const hmiGui = gui.addFolder('HMI')
+            // gui.remember(scope.state)
+            // const fun = {
+            //     resetTargetAngles: () => {
+            //         Robot.dispatch('ROBOT_CHANGE_ANGLES', {
+            //             A0: 0,
+            //             A1: 0,
+            //             A2: 0,
+            //             A3: 0,
+            //             A4: 0,
+            //             A5: 0,
+            //         })
+            //     },
+            // }
+            // hmiGui.add(fun, 'resetTargetAngles').onChange(() => {
+            //     console.log("reset TargetAngles")
+            // })
+            // window.debug.show = false
+            // hmiGui.add(window.debug, 'show')
+            // console.log("启动Hmi")
         }
     }
 

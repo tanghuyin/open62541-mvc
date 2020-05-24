@@ -44,7 +44,7 @@ public class WebSocketServiceImpl implements WebSocketService {
         // NOT Applicable NOW!
     }
 
-    public void sendMessage(String message) throws IOException {
+    public synchronized void sendMessage(String message) throws IOException {
         this.session.getBasicRemote().sendText(message);
     }
 

@@ -300,16 +300,17 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public void assignWork(int i) {
-        logger.info("分配给第 {} 个机器人拾取任务", i);
+    public void assignWork(int i, int jobNum) {
+        logger.info("分配给第 {} 个机器人 {} 个拾取任务", i, jobNum);
         // 开始修改某个值，并且机器人客户端订阅该值
         NodeId objectId = Identifiers.ObjectsFolder;
         NodeId generateRobotJobEventMethodId = new NodeId(1, 62542);
         short input = (short) i;
+        short num = (short) jobNum;
         CallMethodRequest request = new CallMethodRequest(
                 objectId,
                 generateRobotJobEventMethodId,
-                new Variant[]{new Variant(input)}
+                new Variant[]{new Variant(input), new Variant(num)}
         );
         this.client.call(request).thenAccept(result -> {
             StatusCode statusCode = result.getStatusCode();
@@ -371,10 +372,10 @@ public class ClientServiceImpl implements ClientService {
         if (value.getValue().getValue() != null) {
             StatusCode statusCode = (StatusCode) value.getValue().getValue();
             if (statusCode.isGood()) {
-                logger.info("robot{}:, status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), true);
+                logger.info("robot{}: status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), true);
                 robotStatusDao.put(new RobotStatusData(nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), true));
             } else {
-                logger.info("robot{}:, status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), false);
+                logger.info("robot{}: status={}", nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), false);
                 robotStatusDao.put(new RobotStatusData(nodeIdToStatus.getOrDefault(item.getReadValueId().getNodeId().getIdentifier(), -1), false));
             }
         }

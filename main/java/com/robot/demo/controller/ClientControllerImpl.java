@@ -1,9 +1,6 @@
 package com.robot.demo.controller;
 
-import com.robot.demo.service.ClientService;
-import com.robot.demo.service.ClientServiceImpl;
-import com.robot.demo.service.UpdateService;
-import com.robot.demo.service.UpdateServiceImpl;
+import com.robot.demo.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +19,8 @@ public class ClientControllerImpl implements ClientController {
     ClientServiceImpl clientService;
     @Autowired
     UpdateServiceImpl updateService;
+    @Autowired
+    OrderServiceImpl orderService;
 
     @RequestMapping("/index")
     public String index() {
@@ -58,8 +57,9 @@ public class ClientControllerImpl implements ClientController {
     @Override
     @RequestMapping(path = {"assignWork"}, method = {RequestMethod.GET})
     @ResponseBody
-    public String assignWorkToClient(@RequestParam(value = "robotId", required = true) int robotId) throws Exception {
-        clientService.assignWork(robotId);
+    public String assignWorkToClient(@RequestParam(value = "robotId", required = true) int robotId, @RequestParam(value = "jobNum", required = true) int jobNum) throws Exception {
+        orderService.createOrder(robotId, jobNum);
+        clientService.assignWork(robotId, jobNum);
         return "success";
     }
 

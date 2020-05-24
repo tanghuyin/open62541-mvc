@@ -9,6 +9,6 @@ public interface ClientService {
     boolean connectServer();
     boolean createSubscription() throws ExecutionException, InterruptedException;
     boolean disconnectServer();
-    void assignWork(int i);
+    void assignWork(int i, int jobNum);
     void robotFail(int i);
 }

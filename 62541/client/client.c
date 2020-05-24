@@ -227,7 +227,7 @@ void assignWorkToRobot1(UA_Client *client) {
     }
     int len;
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "First Robot START!");
-    while (fgets(buf, MAX_LINE, fp) != NULL) {
+    while (fgets(buf, MAX_LINE, fp) != NULL && robot1_normal) {
         len = strlen(buf);
         buf[len-1] = '\0';
         if (len == 1) {
@@ -268,7 +268,7 @@ void assignWorkToRobot2(UA_Client *client) {
     }
     int len;
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Second Robot START!");
-    while (fgets(buf, MAX_LINE, fp) != NULL) {
+    while (fgets(buf, MAX_LINE, fp) != NULL && robot2_normal) {
         len = strlen(buf);
         buf[len-1] = '\0';
         if (len == 1) {
@@ -306,11 +306,13 @@ void *robot1_consumer(void *arg) {
     client = (UA_Client *) arg;
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1消费者线程启动");
     while (1) {
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1等待任务");
         sem_wait(&robot1_sem);
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1开始执行任务");
         if (robot1_normal && robot1_job_size > 0) assignWorkToRobot1(client);
         pthread_mutex_lock(&robot1_mutex);
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1结束执行任务, 任务数为%d", --robot1_job_size);
+        if (robot1_normal) robot1_job_size--;
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1结束执行任务, 任务数为%d", robot1_job_size);
         pthread_mutex_lock(&write_mutex);
         writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
         pthread_mutex_unlock(&write_mutex);
@@ -327,7 +329,8 @@ void *robot2_consumer(void *arg) {
         UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2开始执行任务");
         if (robot2_normal && robot2_job_size > 0) assignWorkToRobot2(client);
         pthread_mutex_lock(&robot2_mutex);
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2结束执行任务, 任务数为%d", --robot2_job_size);
+        if (robot2_normal) robot2_job_size--;
+        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2结束执行任务, 任务数为%d", robot2_job_size);
         pthread_mutex_lock(&write_mutex);
         writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
         pthread_mutex_unlock(&write_mutex);
@@ -341,7 +344,7 @@ void *balancer(void *arg) {
     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "均衡任务线程启动");
     while (1) {
         sleep(2);
-        if (robot1_job_size - robot2_job_size >= 3) {
+        if (robot1_job_size - robot2_job_size >= 3 && robot2_normal) {
             pthread_mutex_lock(&robot1_mutex);
             pthread_mutex_lock(&robot2_mutex);
 
@@ -357,7 +360,7 @@ void *balancer(void *arg) {
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1过于繁忙，分配一个任务给Robot 2; Robot1: %d, Robot2: %d", robot1_job_size, robot2_job_size);
             pthread_mutex_unlock(&robot1_mutex);
             pthread_mutex_unlock(&robot2_mutex);
-        } else if (robot2_job_size - robot1_job_size >= 3) {
+        } else if (robot2_job_size - robot1_job_size >= 3 && robot1_normal) {
             pthread_mutex_lock(&robot1_mutex);
             pthread_mutex_lock(&robot2_mutex);
 
@@ -393,6 +396,7 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
                size_t nEventFields, UA_Variant *eventFields) 
 {
     int robotNo = -1;
+    int jobNum = 0;
     // UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event triggered received by Robot Client");
     UA_assert(*(UA_UInt32*)monContext == monId);
     for(size_t i = 0; i < nSelectClauses; ++i) {
@@ -401,11 +405,12 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Severity: %u", severity);
         } else if (UA_Variant_hasScalarType(&eventFields[i], &UA_TYPES[UA_TYPES_LOCALIZEDTEXT])) {
             UA_LocalizedText *lt = (UA_LocalizedText *)eventFields[i].data;
+            int info = atoi(lt->text.data);
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
-                        "Message: %d", atoi(lt->text.data)); // C语言这个库传字符串有问题，总会多点东西，只好用数字
-            robotNo = atoi(lt->text.data);
-        }
-        else {
+                        "Message: Robot: %d JobNum: %d", info % 10, info / 10); // C语言这个库传字符串有问题，总会多点东西，只好用数字
+            robotNo = info % 10;
+            jobNum = info / 10;
+        } else {
             // 处理机器人发生故障，转移任务
             UA_String RobotFailureEventType = UA_STRING("RobotFailureEventType");
             UA_String RobotJobEventType = UA_STRING("RobotJobEventType");
@@ -416,73 +421,125 @@ static void handler_events(UA_Client *client, UA_UInt32 subId, void *subContext,
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Event Type: %s", typeName.text.data);
             if (UA_String_equal(&typeName.text, &RobotFailureEventType)) {
                 if (robotNo == 1) {
-                    pthread_mutex_lock(&write_mutex);
-                    writeServerValueStatusCode(client, robot1_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
-                    pthread_mutex_unlock(&write_mutex);
-                    pthread_cancel(robot1_consumer_thread);
-                    pthread_mutex_lock(&robot1_mutex);
-                    pthread_mutex_lock(&robot2_mutex);
-                    if (robot2_normal) {
-                        robot2_job_size += robot1_job_size;
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1发生故障，将%d个任务转移给Robot2，Robot 2任务数为%d", robot1_job_size, robot2_job_size);
-                        for (int j = 0; j < robot1_job_size; j++) {
-                            sem_post(&robot2_sem);
-                        }
-                        robot1_job_size = 0;
+                    if (robot1_normal) {
                         robot1_normal = false;
-                    }
-                    pthread_mutex_unlock(&robot1_mutex);
-                    pthread_mutex_unlock(&robot2_mutex);
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueStatusCode(client, robot1_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
+                        pthread_mutex_unlock(&write_mutex);
+                        // pthread_cancel(robot1_consumer_thread);
+                        pthread_mutex_lock(&robot1_mutex);
+                        pthread_mutex_lock(&robot2_mutex);
+                        if (robot2_normal) {
+                            robot2_job_size += robot1_job_size;
+                            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1发生故障，将%d个任务转移给Robot2，Robot 2任务数为%d", robot1_job_size, robot2_job_size);
+                            for (int j = 0; j < robot1_job_size; j++) {
+                                sem_post(&robot2_sem);
+                            }
+                            robot1_job_size = 0;                            
+                        }
+                        pthread_mutex_unlock(&robot1_mutex);
+                        pthread_mutex_unlock(&robot2_mutex);
 
-                    pthread_mutex_lock(&write_mutex);
-                    writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
-                    writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
-                    pthread_mutex_unlock(&write_mutex);
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
+                        writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
+                        pthread_mutex_unlock(&write_mutex);
+                    } else {
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueStatusCode(client, robot1_Status_Id, UA_STATUSCODE_GOOD);
+                        pthread_mutex_unlock(&write_mutex);
+                        robot1_normal = true;
+                        if (robot2_job_size != 0 && !robot2_normal) {
+                            pthread_mutex_lock(&robot1_mutex);
+                            pthread_mutex_lock(&robot2_mutex);
+                            robot1_job_size = robot2_job_size;
+                            for (int j = 0; j < robot2_job_size; j++) {
+                                sem_post(&robot1_sem);
+                            }
+                            robot2_job_size = 0;
+                            pthread_mutex_unlock(&robot1_mutex);
+                            pthread_mutex_unlock(&robot2_mutex);
+                            
+                            pthread_mutex_lock(&write_mutex);
+                            writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
+                            writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
+                            pthread_mutex_unlock(&write_mutex);
+                        }
+                    }
+                    
                     
                     
                 } else if (robotNo == 2) {
-                    pthread_mutex_lock(&write_mutex);
-                    writeServerValueStatusCode(client, robot2_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
-                    pthread_mutex_unlock(&write_mutex);
-                    pthread_cancel(robot2_consumer_thread);
-                    pthread_mutex_lock(&robot1_mutex);
-                    pthread_mutex_lock(&robot2_mutex);
-                    if (robot1_normal) {                        
-                        robot1_job_size += robot2_job_size;
-                        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2发生故障，将%d个任务转移给Robot1，Robot 1任务数为%d", robot2_job_size, robot1_job_size);
-                        for (int j = 0; j < robot2_job_size; j++) {
-                            sem_post(&robot1_sem);
-                        }
-                        robot2_job_size = 0;
+                    if (robot2_normal) {
                         robot2_normal = false;
-                    }
-                    pthread_mutex_unlock(&robot1_mutex);
-                    pthread_mutex_unlock(&robot2_mutex);
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueStatusCode(client, robot2_Status_Id, UA_STATUSCODE_BADUNEXPECTEDERROR);
+                        pthread_mutex_unlock(&write_mutex);
+                        pthread_mutex_lock(&robot1_mutex);
+                        pthread_mutex_lock(&robot2_mutex);
+                        if (robot1_normal) {                        
+                            robot1_job_size += robot2_job_size;
+                            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2发生故障，将%d个任务转移给Robot1，Robot 1任务数为%d", robot2_job_size, robot1_job_size);
+                            for (int j = 0; j < robot2_job_size; j++) {
+                                sem_post(&robot1_sem);
+                            }
+                            robot2_job_size = 0;
+                        }
+                        pthread_mutex_unlock(&robot1_mutex);
+                        pthread_mutex_unlock(&robot2_mutex);
 
-                    pthread_mutex_lock(&write_mutex);
-                    writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
-                    writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
-                    pthread_mutex_unlock(&write_mutex);
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
+                        writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
+                        pthread_mutex_unlock(&write_mutex);
+                    } else {
+                        pthread_mutex_lock(&write_mutex);
+                        writeServerValueStatusCode(client, robot2_Status_Id, UA_STATUSCODE_GOOD);
+                        pthread_mutex_unlock(&write_mutex);
+                        robot2_normal = true;
+                        if (robot1_job_size != 0 && !robot1_normal) {
+                            pthread_mutex_lock(&robot1_mutex);
+                            pthread_mutex_lock(&robot2_mutex);
+                            robot2_job_size = robot1_job_size;
+                            for (int j = 0; j < robot1_job_size; j++) {
+                                sem_post(&robot2_sem);
+                            }
+                            robot1_job_size = 0;
+                            pthread_mutex_unlock(&robot1_mutex);
+                            pthread_mutex_unlock(&robot2_mutex);
+                            
+                            pthread_mutex_lock(&write_mutex);
+                            writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
+                            writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
+                            pthread_mutex_unlock(&write_mutex);
+                        }
+                    }
+                    
                 }
             } else if (UA_String_equal(&typeName.text, &RobotJobEventType)) {
                 if (robotNo == 1) {
                     pthread_mutex_lock(&robot1_mutex);
-                    robot1_job_size++;
+                    robot1_job_size += jobNum;
                     pthread_mutex_lock(&write_mutex);
                     writeServerValueInt32(client, robot1_job_num_Id, robot1_job_size);
                     pthread_mutex_unlock(&write_mutex);
                     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 1增加任务，任务数为%d", robot1_job_size);
                     pthread_mutex_unlock(&robot1_mutex);
-                    sem_post(&robot1_sem);
+                    for (int j = 0; j < jobNum; j++) {
+                        sem_post(&robot1_sem);
+                    }
+                    
                 } else if (robotNo == 2) {
                     pthread_mutex_lock(&robot2_mutex);
-                    robot2_job_size++;
+                    robot2_job_size += jobNum;
                     pthread_mutex_lock(&write_mutex);
                     writeServerValueInt32(client, robot2_job_num_Id, robot2_job_size);
                     pthread_mutex_unlock(&write_mutex);
                     UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Robot 2增加任务，任务数为%d", robot2_job_size);
                     pthread_mutex_unlock(&robot2_mutex);
-                    sem_post(&robot2_sem);
+                    for (int j = 0; j < jobNum; j++) {
+                        sem_post(&robot2_sem);
+                    }
                 }
             }
         }
@@ -666,7 +723,6 @@ int main(void) {
     pthread_mutex_destroy(&robot1_mutex);
     pthread_mutex_destroy(&robot2_mutex);
     pthread_mutex_destroy(&write_mutex);
-    pthread_mutex_destroy(&balance_thread);
     return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 
     
